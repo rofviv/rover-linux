@@ -1,0 +1,10 @@
+export PROJECT_ROOT="$HOME/Projects/rover-linux"
+export TOKEN_PATIO="token-undefined"
+export BASE_URL_PATIO="https://www.patio-driver.patiodelivery2.com"
+export IP_LOCAL_MAVPROXY="10.13.13.3"
+export IP_REMOTE_MAVPROXY="192.168.18.30"
+export PORT_CUBE="/dev/ttyACM0"
+export MEET_LINK="https://meet.google.com/wph-fjdb-npn"
+export SCREEN_SESSION_NAME="mavproxy_session"
+export PORT_CAMERA="/dev/video6"
+
