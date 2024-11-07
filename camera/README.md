@@ -12,6 +12,7 @@ sudo apt install gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugi
 WINDOWS - RECEIVER
 1.- install gstreamer:
 https://gstreamer.freedesktop.org/download/#windows
+Descargar MinGW 64-bit
 2.- add bin path to environment variables:
 C:\gstreamer\1.0\x86_64\bin
 3.- execute in terminal:

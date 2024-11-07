@@ -72,6 +72,14 @@ sudo apt-get install screen
 #test screen
 screen -ls
 
+#commands
+#delete screen
+screen -X -S <session_id> quit
+#list screen
+screen -ls
+#resume screen
+screen -r <session_name>
+CTRL + A + D (exit screen not kill)
 
 #copy directory to raspberry pi
 #from pc local to raspberry pi
