@@ -83,7 +83,7 @@ CTRL + A + D (exit screen not kill)
 
 #copy directory to raspberry pi
 #from pc local to raspberry pi
-rsync -av --exclude='.venv' rover-linux/ dev@192.168.0.8:/home/dev/rover-linux
+rsync -av --exclude='.venv' rover-linux/ dev@192.168.0.14:/home/dev/rover-linux
 
 #install dependencies
 source .venv/bin/activate
