@@ -1,0 +1,384 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: #2d2d2d;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+h1 {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #363636;
+    border-radius: 6px;
+    border: 1px solid #444444;
+}
+
+h2 {
+    color: #00ff9d;
+    margin-bottom: 15px;
+}
+
+.screen-container {
+    margin-bottom: 15px;
+}
+
+.screen-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #404040;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    border: 1px solid #555555;
+    color: #00ff9d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.screen-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.screen-name {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.view-logs-text {
+    font-size: 0.8em;
+    color: #888;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.screen-item:hover {
+    background-color: #454545;
+    transform: translateX(5px);
+}
+
+.screen-item:hover .view-logs-text {
+    opacity: 1;
+}
+
+.log-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: #363636;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid #444444;
+    color: #00ff9d;
+    font-weight: bold;
+}
+
+.log-content {
+    padding: 15px;
+    background-color: #1c1c1c;
+    border-radius: 0 0 4px 4px;
+    border: 1px solid #444444;
+    border-top: none;
+    font-family: 'Courier New', monospace;
+    color: #00ff9d;
+    white-space: pre-wrap;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.log-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.log-content::-webkit-scrollbar-track {
+    background: #1c1c1c;
+}
+
+.log-content::-webkit-scrollbar-thumb {
+    background: #444444;
+    border-radius: 4px;
+}
+
+.log-content::-webkit-scrollbar-thumb:hover {
+    background: #555555;
+}
+
+.script-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    background-color: #004d99;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #0066cc;
+}
+
+.action-btn:hover {
+    background-color: #0066cc;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,102,204,0.4);
+}
+
+.refresh-btn {
+    padding: 8px 16px;
+    background-color: #006633;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #00994d;
+}
+
+.refresh-btn:hover {
+    background-color: #00994d;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,153,77,0.4);
+}
+
+.output-container {
+    padding: 15px;
+    background-color: #1c1c1c;
+    border-radius: 4px;
+    min-height: 100px;
+    margin-top: 20px;
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+    color: #00ff9d;
+    border: 1px solid #444444;
+}
+
+/* Estilos para scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #666666;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #888888;
+}
+
+/* Estilos para texto seleccionado */
+::selection {
+    background: #004d99;
+    color: white;
+}
+
+/* Estilos para mensajes de error */
+.error {
+    color: #ff4444;
+    border-color: #ff4444;
+}
+
+/* Efectos de hover adicionales */
+.screen-item:hover {
+    background-color: #454545;
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+}
+
+/* Animación de carga */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+.system-info {
+    background-color: #363636;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+    border: 1px solid #444444;
+}
+
+.info-item {
+    color: #00ff9d;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-item i {
+    color: #0066cc;
+}
+
+.info-item i.fa-clock {
+    color: #00ff9d;
+}
+
+.info-item:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 600px) {
+    .system-info {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+.delete-btn {
+    background-color: #661a1a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #801515;
+}
+
+.delete-btn:hover {
+    background-color: #801515;
+    transform: scale(1.1);
+}
+
+.delete-btn i {
+    color: white;
+}
+
+/* Animación para cuando se elimina una screen */
+@keyframes fadeOut {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Loading spinner */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #363636;
+    border-top: 4px solid #00ff9d;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    color: #00ff9d;
+    font-size: 1.1em;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mensajes de éxito y error */
+.success-message, .error-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.success-message {
+    background-color: #1a472a;
+    border: 1px solid #2d8a3e;
+}
+
+.error-message {
+    background-color: #471a1a;
+    border: 1px solid #8a2d2d;
+}
+
+.success-message i {
+    color: #2d8a3e;
+    font-size: 1.2em;
+}
+
+.error-message i {
+    color: #8a2d2d;
+    font-size: 1.2em;
+}
+
+.output-details {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #2d2d2d;
+    border-radius: 4px;
+    border: 1px solid #444444;
+}
+
+/* Animación de fade para los mensajes */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.success-message, .error-message {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Hover effect para los mensajes */
+.success-message:hover, .error-message:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+}
+
+/* Hacer el tiempo más visible */
+.info-item:last-child {
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+}

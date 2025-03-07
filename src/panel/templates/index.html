@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Screen Dashboard</h1>
+        
+        <div class="system-info">
+            <span class="info-item">
+                <i class="fas fa-user"></i> User: {{ username }}
+            </span>
+            <span class="info-item">
+                <i class="fas fa-clock"></i> Started: {{ start_time }}
+            </span>
+        </div>
+        
+        <div class="section">
+            <h2>Active Screens</h2>
+            <div id="screen-list" class="screen-container">
+                <!-- Screens will be loaded here -->
+            </div>
+            <button onclick="refreshScreens()" class="refresh-btn">
+                Refresh Screens
+            </button>
+        </div>
+
+        <div class="section">
+            <h2>Screen Actions</h2>
+            <div class="script-buttons">
+                <button onclick="executeScreen('launcher')" class="action-btn">
+                    Execute LAUNCHER (All in one)
+                </button>
+                <button onclick="executeScreen('screen_obs')" class="action-btn">
+                    Execute SCREEN_OBS
+                </button>
+                <button onclick="executeScreen('screen_meet')" class="action-btn">
+                    Execute SCREEN_MEET
+                </button>
+                <button onclick="executeScreen('screen_mavproxy')" class="action-btn">
+                    Execute SCREEN_MAVPROXY
+                </button>
+                <button onclick="executeScreen('screen_sensor_server')" class="action-btn">
+                    Execute SCREEN_SENSOR_SERVER
+                </button>
+                <button onclick="executeScreen('screen_lidar')" class="action-btn">
+                    Execute SCREEN_LIDAR
+                </button>
+                <button onclick="executeScreen('screen_sonar')" class="action-btn">
+                    Execute SCREEN_SONAR
+                </button>
+                <button onclick="executeScreen('screen_latency')" class="action-btn">
+                    Execute SCREEN_LATENCY
+                </button>
+                <button onclick="executeScreen('screen_nextion')" class="action-btn">
+                    Execute SCREEN_NEXTION
+                </button>
+                <button onclick="executeScreen('screen_dashboard')" class="action-btn">
+                    Execute SCREEN_DASHBOARD
+                </button>
+            </div>
+        </div>
+
+        <div id="output" class="output-container">
+            <!-- Script output will be shown here -->
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

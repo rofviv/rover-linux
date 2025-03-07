@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control Robótico</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Panel de Control Robótico</h1>
+        
+        <div class="camera-controls">
+            <div class="camera-status">
+                <p>Cámara activa: <span id="activeCamera" class="camera-indicator">
+                    {% if active_camera == 'front' %}
+                        Frontal
+                    {% elif active_camera == 'back' %}
+                        Trasera
+                    {% else %}
+                        Ninguna
+                    {% endif %}
+                </span></p>
+            </div>
+            <button id="frontCameraBtn" class="camera-btn {% if active_camera == 'front' %}active{% endif %}">Activar Cámara Frontal</button>
+            <button id="backCameraBtn" class="camera-btn {% if active_camera == 'back' %}active{% endif %}">Activar Cámara Trasera</button>
+        </div>
+        
+        <div class="sensor-panel">
+            <div class="sensor-control">
+                <h2>Sensor Frontal</h2>
+                <label class="switch">
+                    <input type="checkbox" id="sonarStatus" {% if current_front_status %}checked{% endif %}>
+                    <span class="slider round"></span>
+                </label>
+                <p>Estado: <span id="frontStatus">{% if current_front_status %}Activo{% else %}Inactivo{% endif %}</span></p>
+            </div>
+
+            <div class="sensor-control">
+                <h2>Sensor Trasero</h2>
+                <label class="switch">
+                    <input type="checkbox" id="sonarBackStatus" {% if current_back_status %}checked{% endif %}>
+                    <span class="slider round"></span>
+                </label>
+                <p>Estado: <span id="backStatus">{% if current_back_status %}Activo{% else %}Inactivo{% endif %}</span></p>
+            </div>
+
+            <div class="sensor-control">
+                <h2>Estado de Latencia</h2>
+                <label class="switch">
+                    <input type="checkbox" id="latencyStatus" {% if current_latency_status %}checked{% endif %}>
+                    <span class="slider round"></span>
+                </label>
+                <p>Estado: <span id="latencyStatusText">{% if current_latency_status %}Activo{% else %}Inactivo{% endif %}</span></p>
+            </div>
+        </div>
+
+        <div class="distance-control">
+            <h2>Distancia del Sensor</h2>
+            <input type="range" id="sonarDistance" min="1" max="80" value="{{ current_distance }}">
+            <p>Distancia: <span id="distanceValue">{{ current_distance }}</span> cm</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

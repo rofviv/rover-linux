@@ -1,0 +1,9 @@
+SCRIPT LIDAR
+Traceback (most recent call last):
+  File "/home/rd2-0/Projects/rover-linux/src/scripts/lidar_client.py", line 19, in <module>
+    info = lidar.get_info()
+  File "/home/rd2-0/Projects/rover-linux/.venv/lib/python3.10/site-packages/rplidar.py", line 211, in get_info
+    dsize, is_single, dtype = self._read_descriptor()
+  File "/home/rd2-0/Projects/rover-linux/.venv/lib/python3.10/site-packages/rplidar.py", line 187, in _read_descriptor
+    raise RPLidarException('Descriptor length mismatch')
+rplidar.RPLidarException: Descriptor length mismatch

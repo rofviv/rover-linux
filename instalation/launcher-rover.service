@@ -1,0 +1,13 @@
+[Unit]
+Description=Launcher Rover Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/home/rd2-1/Projects/rover-linux/config/.env
+ExecStart=/bin/bash /home/rd2-1/Projects/rover-linux/launcher/launcher.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,27 @@
+[1mEnviromentFile:[00m /home/rd2-1/Projects/rover-linux/config/.env
+
+[1mPYTHON:[00m python3
+[1mHOME:[00m /home/rd2-1
+[1mPROJECT_ROOT:[00m /home/rd2-1/Projects/rover-linux
+[1mTOKEN_PATIO:[00m eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDQsInVzZXJuYW1lIjoic2NAdGVzdC5jb20iLCJpYXQiOjE3MjE3NjY5NjgsImV4cCI6MTc1MzMwMjk2OH0.UrIetzHOSBcTlMdeOD_TRyj4eLIHMdzx-SxZXSfwQM4
+[1mBASE_URL_PATIO:[00m https://www.patio-driver.patiodelivery2.com
+[1mIP_LOCAL_MAVPROXY:[00m 10.13.13.3
+[1mIP_REMOTE_MAVPROXY:[00m 192.168.0.7
+[1mPORT_CUBE:[00m /dev/cube
+[1mPORT_LIDAR:[00m /dev/rplidar
+[1mPORT_ARDUINO:[00m /dev/arduino
+[1mPORT_NEXTION:[00m /dev/nextion
+[1mPORT_CAMERA:[00m /dev/video2
+[1mMEET_LINK:[00m https://meet.google.com/ygc-pfis-pzb
+[1mSCREEN_SESSION_NAME:[00m mavproxy_session
+
+[01;36m* To launch panel. run:[00m
+ bash $PROJECT_ROOT/startup.sh /home/rd2-1/Projects/rover-linux/launcher
+
+[01;36m* To verify the scripts. run:[00m
+ screen -ls
+
+Parameter: /home/rd2-1/Projects/rover-linux/launcher
+[01;32mPanel running... [OK][00m
+http://10.13.13.3:5000
+
