@@ -110,7 +110,7 @@ pip3 install -r requirements.txt
 
 # Install Wireguard
 - Copy a paste wireguard peer.conf in wg0.conf
-- IMPORTANT: Add 'PersistentKeepAlive = 25' end to file without '
+- IMPORTANT: Add 'PersistentKeepAlive = 25' end to file without 'b
 ```bash
 sudo apt install resolvconf
 sudo apt install wireguard
