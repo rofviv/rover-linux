@@ -1,0 +1,137 @@
+### GET STATUS ROVER
+GET http://localhost:5000 HTTP/1.1
+
+### SET IP RELAY
+POST http://localhost:5000/set_ip_relay HTTP/1.1
+content-type: application/json
+
+{
+    "ip_relay": "192.168.10.300"
+}
+
+### READ IP RELAY
+GET http://localhost:5000/read_ip_relay HTTP/1.1
+
+### SYNC DATA RELAY
+GET http://localhost:5000/sync_data_relay HTTP/1.1
+
+### TOGGLE DATA RELAY
+POST http://localhost:5000/toggle_data_relay HTTP/1.1
+content-type: application/json
+
+{
+    "relay_id": "1"
+}
+
+
+### SET TOKEN
+POST http://localhost:5000/set_token HTTP/1.1
+content-type: application/json
+
+{
+    "token": "1234567890"
+}
+
+
+### READ TOKEN
+GET http://localhost:5000/read_token HTTP/1.1
+
+
+### READ LATENCY STATUS 
+GET http://localhost:5000/read_latency_status HTTP/1.1
+
+### SET LATENCY STATUS
+POST http://localhost:5000/set_latency_status HTTP/1.1
+content-type: application/json
+
+{
+    "latency_status": "1"
+}
+
+### SET LATENCY TIME
+POST http://localhost:5000/set_latency_time HTTP/1.1
+content-type: application/json
+
+{
+    "latency_time": "1000"
+}
+
+### READ LATENCY TIME
+GET http://localhost:5000/read_latency_time HTTP/1.1
+
+### READ LIDAR STATUS
+GET http://localhost:5000/read_lidar_status HTTP/1.1
+
+### SET LIDAR STATUS
+POST http://localhost:5000/set_lidar_status HTTP/1.1
+content-type: application/json
+
+{
+    "lidar_status": "0"
+}
+
+### READ LIDAR DISTANCE
+GET http://localhost:5000/read_lidar_distance HTTP/1.1
+
+### SET LIDAR DISTANCE
+POST http://localhost:5000/set_lidar_distance HTTP/1.1
+content-type: application/json
+
+{
+    "lidar_distance": "1500"
+}
+
+### READ LIDAR ANGLE
+GET http://localhost:5000/read_lidar_angle HTTP/1.1
+
+### SET LIDAR ANGLE
+POST http://localhost:5000/set_lidar_angle HTTP/1.1
+content-type: application/json
+
+{
+    "lidar_angle": "50"
+}
+
+### READ SONAR BACK STATUS
+GET http://localhost:5000/read_sonar_back_status HTTP/1.1
+
+### SET SONAR BACK STATUS
+POST http://localhost:5000/set_sonar_back_status HTTP/1.1
+content-type: application/json
+
+{
+    "sonar_back_status": "0"
+}
+
+### READ SONAR FRONT STATUS
+GET http://localhost:5000/read_sonar_front_status HTTP/1.1
+
+### SET SONAR FRONT STATUS
+POST http://localhost:5000/set_sonar_front_status HTTP/1.1
+content-type: application/json
+
+{
+    "sonar_front_status": "0"
+}
+
+### SET SONAR BACK DISTANCE
+POST http://localhost:5000/set_sonar_back_distance HTTP/1.1
+content-type: application/json
+
+{
+    "sonar_back_distance": "10"
+}
+
+### READ SONAR BACK DISTANCE
+GET http://localhost:5000/read_sonar_back_distance HTTP/1.1
+
+### SET SONAR FRONT DISTANCE
+POST http://localhost:5000/set_sonar_front_distance HTTP/1.1
+content-type: application/json
+
+{
+    "sonar_front_distance": "10"
+}
+
+### READ SONAR FRONT DISTANCE
+GET http://localhost:5000/read_sonar_front_distance HTTP/1.1

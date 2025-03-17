@@ -8,13 +8,32 @@ print("SCRIPT LIDAR")
 
 project_root = os.getenv('PROJECT_ROOT', '')
 port_com_lidar = os.getenv('PORT_LIDAR', '/dev/rplidar')
-range_distance = 1700
-range_angle = 30
-half_range_angle = range_angle / 2
+sensor_distance = 1700
+sensor_angle = 30
+# half_range_angle = range_angle / 2
 min_angle = 0.0
 max_angle = 359.9
 
 sensor_mode = 1
+
+def read_sensor_distance():
+    global sensor_distance
+    try:
+        with open(f"{project_root}/status/lidar_distance.txt", "r") as file:
+            sensor_distance = file.read().strip()
+            sensor_distance = int(sensor_distance)
+    except Exception as e:
+        print(f"Error al leer el archivo lidar_distance.txt: {e}")
+
+
+def read_sensor_angle():
+    global sensor_angle
+    try:
+        with open(f"{project_root}/status/lidar_angle.txt", "r") as file:
+            mode = file.read().strip()
+            sensor_angle = int(mode)
+    except Exception as e:
+        print(f"Error al leer el archivo lidar_angle.txt: {e}")
 
 def read_sensor_mode():
     global sensor_mode
@@ -29,6 +48,8 @@ def read_sensor_mode():
 def monitor_mode_changes():
     global sensor_mode
     while True:
+        read_sensor_distance()
+        read_sensor_angle()
         read_sensor_mode()
         time.sleep(5)
 
@@ -48,6 +69,10 @@ def main():
     mode_thread = threading.Thread(target=monitor_mode_changes)
     mode_thread.daemon = True
     mode_thread.start()
+
+    read_sensor_distance()
+    read_sensor_angle()
+    read_sensor_mode()
     
     max_retries = 3
     retry_count = 0
@@ -71,11 +96,12 @@ def main():
                 raise RPLidarException('Lidar not healthy')
                 
             print("Scanning started\n")
-            print(f"Range distance = {range_distance}")
+            print(f"Range distance = {sensor_distance}")
 
             for scan in lidar.iter_scans():
+                half_range_angle = sensor_angle / 2
                 for (_, angle, distance) in scan:
-                    if (angle >= (max_angle - half_range_angle) or angle <= (min_angle + half_range_angle)) and distance < range_distance:
+                    if (angle >= (max_angle - half_range_angle) or angle <= (min_angle + half_range_angle)) and distance < sensor_distance:
                         if sensor_mode == 1:
                             print(f"Objeto detectado a {distance} mm en el ángulo {angle} grados")
                             print("Ejecutando comandos en segundo plano...\n")

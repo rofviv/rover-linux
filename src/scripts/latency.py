@@ -21,11 +21,20 @@ rc_channel_number_start = os.getenv('RC_CHANNEL_NUMBER_START', '6')
 rc_channel_number_stop = os.getenv('RC_CHANNEL_NUMBER_STOP', '2')
 ip_local_mavproxy = os.getenv('IP_LOCAL_MAVPROXY', '0.0.0.0')
 host_to_ping = os.getenv('IP_REMOTE_MAVPROXY', '192.168.18.20')
-max_latency = 800
+sensor_time = 800
 sensor_mode = 1
 
 logger.info("LATENCY Monitor Starting...")
-logger.info(f"Configuration: Host={host_to_ping}, Max Latency={max_latency}ms")
+
+def read_sensor_time():
+    global sensor_time
+    try:
+        with open(f"{project_root}/status/latency_time_ms.txt", "r", encoding='utf-8') as file:
+            sensor_time = file.read().strip()
+            sensor_time = int(sensor_time)
+    except Exception as e:
+        logger.error(f"Error reading status/latency_time_ms.txt: {e}")
+
 
 def read_sensor_mode():
     global sensor_mode
@@ -40,6 +49,7 @@ def monitor_mode_changes():
     global sensor_mode
     while True:
         read_sensor_mode()
+        read_sensor_time()
         time.sleep(5)
 
 def send_command_to_wsl(command):
@@ -100,16 +110,21 @@ def main():
     mode_thread.daemon = True
     mode_thread.start()
 
+    read_sensor_time()
+    read_sensor_mode()
+
+    logger.info(f"Configuration: Host={host_to_ping}, Max Latency={sensor_time}ms")
+
     while True:
         try:
             ping_time = check_ping(host_to_ping)
             
             if ping_time is not None:
-                status = "OK" if ping_time <= max_latency else "HIGH LATENCY"
-                logger.info(f"Latency: {ping_time:.1f}ms | Max: {max_latency}ms | Mode: {sensor_mode} | Status: {status}")
+                status = "OK" if ping_time <= sensor_time else "HIGH LATENCY"
+                logger.info(f"Latency: {ping_time:.1f}ms | Max: {sensor_time}ms | Mode: {sensor_mode} | Status: {status}")
                 
-                if ping_time > max_latency and sensor_mode == 1:
-                    logger.warning(f"Latency exceeded threshold: {ping_time:.1f}ms > {max_latency}ms")
+                if ping_time > sensor_time and sensor_mode == 1:
+                    logger.warning(f"Latency exceeded threshold: {ping_time:.1f}ms > {sensor_time}ms")
                     execute_commands_in_thread()
             else:
                 logger.error(f"Connection lost | Mode: {sensor_mode}")

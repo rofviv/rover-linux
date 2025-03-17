@@ -10,7 +10,7 @@ WHITE='\033[01;37m'
 BOLD='\033[1m'
 UNDERLINE='\033[4m'
 
-ENV_FILE="/home/rd2-0/Projects/rover-linux/config/.env"
+ENV_FILE="/home/dev/Projects/rover-linux/config/.env"
 
 if [ -f "$ENV_FILE" ]; then
     export $(grep -Ev '^\s*#|^\s*$' "$ENV_FILE" | xargs -d '\n')
