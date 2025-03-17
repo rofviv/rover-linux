@@ -38,8 +38,10 @@ def read_ip_relay():
 @app.route('/sync_data_relay', methods=['GET'])
 def sync_data_relay():
     try:
-        data = requests.get(f"http://{read_file(IP_RELAY_FILE)}")
+        data = requests.get(f"http://{read_file(IP_RELAY_FILE)}", timeout=8)
         return jsonify(success=True, message="Data relay sync", data=data.json())
+    except requests.Timeout:
+        return jsonify(success=False, message="Timeout error - Error al sincronizar los datos")
     except Exception as e:
         return jsonify(success=False, message="Error al sincronizar los datos", error=str(e))
 
@@ -49,9 +51,11 @@ def toggle_data_relay():
     body = request.get_json()
     relay_id = body.get('relay_id')
     try:
-        requests.post(f"http://{read_file(IP_RELAY_FILE)}/relay{relay_id}", json=body)
+        requests.post(f"http://{read_file(IP_RELAY_FILE)}/relay{relay_id}", json=body, timeout=8)
         data = requests.get(f"http://{read_file(IP_RELAY_FILE)}")
         return jsonify(success=True, message="Data relay set", data=data.json())
+    except requests.Timeout:
+        return jsonify(success=False, message="Timeout error - Error al establecer los datos")
     except Exception as e:
         return jsonify(success=False, message="Error al establecer los datos", error=str(e))
     
