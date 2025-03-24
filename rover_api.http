@@ -20,7 +20,7 @@ POST http://localhost:5000/toggle_data_relay HTTP/1.1
 content-type: application/json
 
 {
-    "relay_id": "1"
+    "relay_id": "3"
 }
 
 
