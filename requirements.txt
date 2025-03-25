@@ -47,3 +47,4 @@ soupsieve==2.3.1
 ssh-import-id==5.11
 urllib3==1.26.5
 pyvisa-py
+flask-socketio

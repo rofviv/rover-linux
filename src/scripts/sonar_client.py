@@ -1,9 +1,12 @@
-import socket
+# import socket
 import os
 import time
 import serial
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
+
+import socketio
+sio = socketio.Client()
 
 print("SCRIPT SONAR")
 
@@ -17,6 +20,8 @@ sensor_back_status = 0
 sensor_front_distance = 20
 sensor_back_distance = 80
 
+last_time_detection = datetime.now()
+is_detection = False
 
 def read_sensor_front_status():
     global sensor_front_status
@@ -70,10 +75,17 @@ def monitor_mode_changes():
 
 
 def manejar_sensor(sensor, distancia, max_distance):
-    if distancia < max_distance:
-        notificar_maestro(f"sonar-{sensor}")
-        print(f"Sensor sonar-{sensor} detecta objeto a {distancia} cm")
+    global last_time_detection, is_detection
 
+    last_time_detection = datetime.now()
+    is_detection = True 
+
+    if distancia < max_distance:
+        notificar_maestro(f"sonar-{sensor}", distancia)
+        print(f"Sensor sonar-{sensor} detecta objeto a {distancia} cm")
+    else:
+        notificar_maestro(f"sonar-{sensor}", 0)
+        print(f"Sensor sonar-{sensor} no detecta objeto")
 
 def leer_sensor():
     mode_thread = threading.Thread(target=monitor_mode_changes)
@@ -102,12 +114,12 @@ def leer_sensor():
                         current_time = datetime.now().strftime('%H:%M:%S')
                         print(f"{current_time} - {linea}")
 
-                        # manejar_sensor(sensor, distancia, sensor_front_distance)
-                        if sensor_back_status == 1:
-                            if sensor == 4:
-                                manejar_sensor(sensor, distancia, sensor_back_distance)
-                        elif sensor != 4:
-                            manejar_sensor(sensor, distancia, sensor_front_distance)
+                        manejar_sensor(sensor, distancia, sensor_front_distance)
+                        # if sensor_back_status == 1:
+                        #     if sensor == 4:
+                        #         manejar_sensor(sensor, distancia, sensor_back_distance)
+                        # elif sensor != 4:
+                        #     manejar_sensor(sensor, distancia, sensor_front_distance)
                 except (IndexError, ValueError):
                     print("Error al procesar los datos del sensor")
 
@@ -119,18 +131,33 @@ def leer_sensor():
         arduino.close()
 
 
-def notificar_maestro(mensaje):
+def notificar_maestro(sensor, distance):
     try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(('localhost', 65432))
-            s.sendall(mensaje.encode('utf-8'))
-            print(f'Notificación "{mensaje}" enviada al maestro.')
+        print(f"Notificando maestro con sensor: {sensor} y distancia: {distance}")
+        sio.emit('sensor_data', {'sensor': sensor, 'distance': distance})
+        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        #     s.connect(('localhost', 65432))
+        #     s.sendall(mensaje.encode('utf-8'))
+        #     print(f'Notificación "{mensaje}" enviada al maestro.')
     except ConnectionRefusedError:
         print('No se pudo conectar con el maestro. Reintentando...')
 
 
+def verificar_timeout():
+    global last_time_detection, is_detection
+    while True:
+        if datetime.now() - last_time_detection > timedelta(seconds=2) and is_detection:
+            notificar_maestro('sonar-1', 0)
+            notificar_maestro('sonar-2', 0)
+            notificar_maestro('sonar-3', 0)
+            notificar_maestro('sonar-4', 0)
+            is_detection = False
+        time.sleep(1)
+
 if __name__ == "__main__":
     try:
+        threading.Thread(target=verificar_timeout, daemon=True).start()
+        sio.connect('http://localhost:5000')
         leer_sensor()
     except KeyboardInterrupt:
         print("Programa detenido por el usuario")

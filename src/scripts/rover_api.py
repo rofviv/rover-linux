@@ -1,7 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_socketio import SocketIO, emit
 import requests
 import os
+import time
+# pip install flask-socketio==4.3.2
 
+print("SCRIPT ROVER API - SOCKETIO")
 
 PROJECT_ROOT = os.environ.get('PROJECT_ROOT', os.getcwd())
 IP_RELAY_FILE = os.path.join(PROJECT_ROOT, 'status', 'ip_relay.txt')
@@ -17,7 +21,10 @@ LIDAR_ANGLE_FILE = os.path.join(PROJECT_ROOT, 'status', 'lidar_angle.txt')
 LATENCY_TIME_FILE = os.path.join(PROJECT_ROOT, 'status', 'latency_time_ms.txt')
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*",)
 
+
+## ROUTES API
 @app.route('/')
 def index():
     return jsonify(success=True, message="Rover API", ip_relay=read_file(IP_RELAY_FILE), token=read_file(TOKEN_FILE), latency_status=read_file(LATENCY_STATUS_FILE), lidar_status=read_file(LIDAR_STATUS_FILE), sonar_back_status=read_file(SONAR_BACK_STATUS_FILE), sonar_front_status=read_file(SONAR_FRONT_STATUS_FILE), sonar_back_distance=read_file(SONAR_BACK_DISTANCE_FILE), sonar_front_distance=read_file(SONAR_FRONT_DISTANCE_FILE), lidar_distance=read_file(LIDAR_DISTANCE_FILE), lidar_angle=read_file(LIDAR_ANGLE_FILE), latency_time=read_file(LATENCY_TIME_FILE))
@@ -190,6 +197,23 @@ def read_latency_time():
     return jsonify(success=True, message="Latency time read", latency_time=read_file(LATENCY_TIME_FILE))
 
 
+## SOCKETIO EVENTS
+@socketio.on('connect')
+def connect(auth):
+    print('Client connected', auth)
+
+
+@socketio.on('disconnect')
+def disconnect(reason):
+    print('Client disconnected, reason:', reason)
+
+
+@socketio.on('sensor_data')
+def sensor_data(data):
+    print('message received with ', data)
+    emit('sensor_data', data, broadcast=True)
+
+## FUNCTIONS
 def read_file(file_path):
     try:
         with open(file_path, "r") as f:
@@ -205,5 +229,4 @@ def set_file(file_path, content):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
