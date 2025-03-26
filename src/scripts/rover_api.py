@@ -234,6 +234,6 @@ def set_file(file_path, content):
         f.write(content)
     print(f"File {file_path} set to {content}")
 
-
+## MAIN
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

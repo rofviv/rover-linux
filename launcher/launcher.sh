@@ -23,17 +23,27 @@ checkinternet() {
 		bash "$PROJECT_ROOT/launcher/screen_mavproxy.sh" &
 		sleep 10
 
-		echo "Opening script sensor server"
-		bash "$PROJECT_ROOT/launcher/screen_sensor_server.sh" &
+		echo "Opening script find esp ip"
+		bash "$PROJECT_ROOT/launcher/find_esp_ip.sh" &
 		sleep 10
 
-		echo "Opening script latency"
-		bash "$PROJECT_ROOT/launcher/screen_latency.sh" &
+
+		# TODO: DEPRECATED
+		# echo "Opening script sensor server"
+		# bash "$PROJECT_ROOT/launcher/screen_sensor_server.sh" &
+		# sleep 10
+
+		echo "Opening script rover api"
+		bash "$PROJECT_ROOT/launcher/screen_rover_api.sh" &
 		sleep 10
 
-		echo "Opening script lidar"
-		bash "$PROJECT_ROOT/launcher/screen_lidar.sh" &
-		sleep 10
+		# echo "Opening script latency"
+		# bash "$PROJECT_ROOT/launcher/screen_latency.sh" &
+		# sleep 10
+
+		# echo "Opening script lidar"
+		# bash "$PROJECT_ROOT/launcher/screen_lidar.sh" &
+		# sleep 10
 
 		echo "Opening script sonar"
 		bash "$PROJECT_ROOT/launcher/screen_sonar.sh" &

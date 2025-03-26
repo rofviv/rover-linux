@@ -1,6 +1,5 @@
-# TODO: DEPRECATED
 #!/bin/bash
-session_name="sensor_server_session"
+session_name="rover_api_session"
 
 if screen -ls | grep -q "$session_name"; then
     echo "$session_name already exists! For quit run:"
@@ -10,9 +9,8 @@ if screen -ls | grep -q "$session_name"; then
 fi
 
 source $PROJECT_ROOT/.venv/bin/activate
-command="$PYTHON $PROJECT_ROOT/src/scripts/sensor_server.py"
+command="$PYTHON $PROJECT_ROOT/src/scripts/rover_api.py"
 
-# screen -dmS "$session_name" bash -c "$command"
 > "$PROJECT_ROOT/logs/$session_name.log"
 screen -L -Logfile "$PROJECT_ROOT/logs/$session_name.log" -dmS "$session_name" bash -c "$command"
 sleep 1
