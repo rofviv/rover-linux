@@ -46,5 +46,7 @@ six==1.16.0
 soupsieve==2.3.1
 ssh-import-id==5.11
 urllib3==1.26.5
+flask-socketio==4.3.2
 pyvisa-py
-flask-socketio
+scapy
+netifaces

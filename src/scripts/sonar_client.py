@@ -1,15 +1,13 @@
-# import socket
 import os
 import time
 import serial
 import threading
-from datetime import datetime, timedelta
-
 import socketio
-sio = socketio.Client()
+from datetime import datetime, timedelta
 
 print("SCRIPT SONAR")
 
+sio = socketio.Client()
 project_root = os.getenv('PROJECT_ROOT', '')
 port_arduino = os.getenv('PORT_ARDUINO', '/dev/arduino')
 arduino = serial.Serial(port=port_arduino, baudrate=9600, timeout=1)
@@ -74,18 +72,18 @@ def monitor_mode_changes():
         time.sleep(5)
 
 
-def manejar_sensor(sensor, distancia, max_distance):
-    global last_time_detection, is_detection
+# def manejar_sensor(sensor, distancia, max_distance):
+#     global last_time_detection, is_detection
 
-    last_time_detection = datetime.now()
-    is_detection = True 
+#     last_time_detection = datetime.now()
+#     is_detection = True 
 
-    if distancia < max_distance:
-        notificar_maestro(f"sonar-{sensor}", distancia)
-        print(f"Sensor sonar-{sensor} detecta objeto a {distancia} cm")
-    else:
-        notificar_maestro(f"sonar-{sensor}", 0)
-        print(f"Sensor sonar-{sensor} no detecta objeto")
+#     if distancia < max_distance:
+#         notificar_maestro(f"sonar-{sensor}", distancia)
+#         print(f"Sensor sonar-{sensor} detecta objeto a {distancia} cm")
+#     else:
+#         notificar_maestro(f"sonar-{sensor}", 0)
+#         print(f"Sensor sonar-{sensor} no detecta objeto")
 
 def leer_sensor():
     mode_thread = threading.Thread(target=monitor_mode_changes)
@@ -106,15 +104,16 @@ def leer_sensor():
             if arduino.in_waiting > 0:
                 linea = arduino.readline().decode('utf-8').strip()
                 try:
-                    if sensor_front_status == 1:
-                        datos = linea.split(',')
-                        sensor = int(datos[0])
-                        distancia = float(datos[1])
+                    # if sensor_front_status == 1:
+                    datos = linea.split(',')
+                    sensor = int(datos[0])
+                    distancia = float(datos[1])
 
-                        current_time = datetime.now().strftime('%H:%M:%S')
-                        print(f"{current_time} - {linea}")
+                    current_time = datetime.now().strftime('%H:%M:%S')
+                    print(f"{current_time} - {linea}")
+                    notificar_maestro(f"sonar-{sensor}", distancia)
 
-                        manejar_sensor(sensor, distancia, sensor_front_distance)
+                        # manejar_sensor(sensor, distancia, sensor_front_distance)
                         # if sensor_back_status == 1:
                         #     if sensor == 4:
                         #         manejar_sensor(sensor, distancia, sensor_back_distance)
@@ -133,12 +132,8 @@ def leer_sensor():
 
 def notificar_maestro(sensor, distance):
     try:
-        print(f"Notificando maestro con sensor: {sensor} y distancia: {distance}")
+        print(f"Notificando sensor: {sensor} y distancia: {distance}")
         sio.emit('sensor_data', {'sensor': sensor, 'distance': distance})
-        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        #     s.connect(('localhost', 65432))
-        #     s.sendall(mensaje.encode('utf-8'))
-        #     print(f'Notificación "{mensaje}" enviada al maestro.')
     except ConnectionRefusedError:
         print('No se pudo conectar con el maestro. Reintentando...')
 
@@ -146,22 +141,36 @@ def notificar_maestro(sensor, distance):
 def verificar_timeout():
     global last_time_detection, is_detection
     while True:
-        if datetime.now() - last_time_detection > timedelta(seconds=2) and is_detection:
+        if datetime.now() - last_time_detection > timedelta(milliseconds=1500) and is_detection:
             notificar_maestro('sonar-1', 0)
             notificar_maestro('sonar-2', 0)
             notificar_maestro('sonar-3', 0)
             notificar_maestro('sonar-4', 0)
             is_detection = False
-        time.sleep(1)
+        time.sleep(0.5)
+
+@sio.event
+def connect():
+    print('Conexión establecida con el servidor Socket.IO')
+    threading.Thread(target=verificar_timeout, daemon=True).start()
+    leer_sensor()
+
+@sio.event
+def disconnect():
+    print('Desconectado del servidor Socket.IO')
 
 if __name__ == "__main__":
-    try:
-        threading.Thread(target=verificar_timeout, daemon=True).start()
-        sio.connect('http://localhost:5000')
-        leer_sensor()
-    except KeyboardInterrupt:
-        print("Programa detenido por el usuario")
-    finally:
-        if arduino.is_open:
-            arduino.close()
-
+    while True:
+        try:
+            print("Intentando conectar al servidor Socket.IO...")
+            sio.connect('http://localhost:5000')
+            sio.wait()
+            break
+        except socketio.exceptions.ConnectionError:
+            print("No se pudo conectar al servidor. Reintentando en 5 segundos...")
+            time.sleep(5)
+        except KeyboardInterrupt:
+            print("Programa detenido por el usuario")
+            if arduino.is_open:
+                arduino.close()
+            break

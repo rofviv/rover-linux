@@ -1,9 +1,9 @@
+# pip install flask-socketio==4.3.2
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit
 import requests
 import os
 import time
-# pip install flask-socketio==4.3.2
 
 print("SCRIPT ROVER API - SOCKETIO")
 
@@ -212,6 +212,13 @@ def disconnect(reason):
 def sensor_data(data):
     print('message received with ', data)
     emit('sensor_data', data, broadcast=True)
+
+
+@socketio.on('cube_data')
+def cube_data(data):
+    print('message received with ', data)
+    emit('cube_data', data, broadcast=True)
+
 
 ## FUNCTIONS
 def read_file(file_path):
