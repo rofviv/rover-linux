@@ -61,7 +61,6 @@ def read_sensor_back_distance():
         print(f"Error al leer el archivo sonar_back_distance.txt: {e}")
 
 
-
 def monitor_mode_changes():
     global sensor_front_status
     while True:
@@ -71,19 +70,6 @@ def monitor_mode_changes():
         read_sensor_back_distance()
         time.sleep(5)
 
-
-# def manejar_sensor(sensor, distancia, max_distance):
-#     global last_time_detection, is_detection
-
-#     last_time_detection = datetime.now()
-#     is_detection = True 
-
-#     if distancia < max_distance:
-#         notificar_maestro(f"sonar-{sensor}", distancia)
-#         print(f"Sensor sonar-{sensor} detecta objeto a {distancia} cm")
-#     else:
-#         notificar_maestro(f"sonar-{sensor}", 0)
-#         print(f"Sensor sonar-{sensor} no detecta objeto")
 
 def leer_sensor():
     mode_thread = threading.Thread(target=monitor_mode_changes)
@@ -104,7 +90,6 @@ def leer_sensor():
             if arduino.in_waiting > 0:
                 linea = arduino.readline().decode('utf-8').strip()
                 try:
-                    # if sensor_front_status == 1:
                     datos = linea.split(',')
                     sensor = int(datos[0])
                     distancia = float(datos[1])
@@ -113,12 +98,6 @@ def leer_sensor():
                     print(f"{current_time} - {linea}")
                     notificar_maestro(f"sonar-{sensor}", distancia)
 
-                        # manejar_sensor(sensor, distancia, sensor_front_distance)
-                        # if sensor_back_status == 1:
-                        #     if sensor == 4:
-                        #         manejar_sensor(sensor, distancia, sensor_back_distance)
-                        # elif sensor != 4:
-                        #     manejar_sensor(sensor, distancia, sensor_front_distance)
                 except (IndexError, ValueError):
                     print("Error al procesar los datos del sensor")
 
@@ -132,6 +111,20 @@ def leer_sensor():
 
 def notificar_maestro(sensor, distance):
     try:
+        if sensor == 'sonar-4' and sensor_back_status == 0:
+            print(f"sonar-4 back status 0 no emit")
+            return
+        elif sensor_front_status == 0:
+            print(f"{sensor} front status 0 no emit")
+            return
+        
+        if sensor == 'sonar-4' and sensor_back_distance > distance:
+            print(f"sonar-4 back distance {sensor_back_distance} > {distance} no emit")
+            return
+        elif sensor_front_distance > distance:
+            print(f"{sensor} front distance {sensor_front_distance} > {distance} no emit")
+            return
+        
         print(f"Notificando sensor: {sensor} y distancia: {distance}")
         sio.emit('sensor_data', {'sensor': sensor, 'distance': distance})
     except ConnectionRefusedError:
@@ -149,15 +142,18 @@ def verificar_timeout():
             is_detection = False
         time.sleep(0.5)
 
+
 @sio.event
 def connect():
     print('Conexión establecida con el servidor Socket.IO')
     threading.Thread(target=verificar_timeout, daemon=True).start()
     leer_sensor()
 
+
 @sio.event
 def disconnect():
     print('Desconectado del servidor Socket.IO')
+
 
 if __name__ == "__main__":
     while True:
@@ -174,3 +170,4 @@ if __name__ == "__main__":
             if arduino.is_open:
                 arduino.close()
             break
+
