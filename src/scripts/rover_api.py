@@ -219,6 +219,10 @@ def cube_data(data):
     print('message received with ', data)
     emit('cube_data', data, broadcast=True)
 
+@socketio.on('latency')
+def latency(data):
+    print('message received with ', data)
+    emit('latency', data, broadcast=True)
 
 ## FUNCTIONS
 def read_file(file_path):

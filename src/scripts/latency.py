@@ -3,8 +3,11 @@ import subprocess
 import time
 import threading
 import logging
+import socketio
 
-# Configuración de logging
+
+sio = socketio.Client()
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
@@ -13,17 +16,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Variables de entorno
 project_root = os.getenv('PROJECT_ROOT', '')
-session_name = os.getenv('SCREEN_SESSION_NAME', "mavproxy_session")
-rc_channel_number_start = os.getenv('RC_CHANNEL_NUMBER_START', '6')
-rc_channel_number_stop = os.getenv('RC_CHANNEL_NUMBER_STOP', '2')
-ip_local_mavproxy = os.getenv('IP_LOCAL_MAVPROXY', '0.0.0.0')
+# session_name = os.getenv('SCREEN_SESSION_NAME', "mavproxy_session")
+# rc_channel_number_start = os.getenv('RC_CHANNEL_NUMBER_START', '6')
+# rc_channel_number_stop = os.getenv('RC_CHANNEL_NUMBER_STOP', '2')
 host_to_ping = os.getenv('IP_REMOTE_MAVPROXY', '192.168.18.20')
 sensor_time = 800
 sensor_mode = 1
 
 logger.info("LATENCY Monitor Starting...")
+
 
 def read_sensor_time():
     global sensor_time
@@ -44,6 +46,7 @@ def read_sensor_mode():
     except Exception as e:
         logger.error(f"Error reading status/latency_status.txt: {e}")
 
+
 def monitor_mode_changes():
     global sensor_mode
     while True:
@@ -51,31 +54,34 @@ def monitor_mode_changes():
         read_sensor_time()
         time.sleep(5)
 
-def send_command_to_wsl(command):
-    wsl_command = f'screen -S {session_name} -p 0 -X stuff "{command}\\n"'
-    try:
-        subprocess.run(wsl_command, shell=True, check=True)
-        logger.debug(f"Command sent: {command}")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Error sending command to Screen: {e}")
 
-def execute_commands():
-    logger.info("Executing emergency commands")
-    commands = [
-        f'rc {rc_channel_number_start} 1005',
-        f'rc {rc_channel_number_stop} 1990',
-        f'rc {rc_channel_number_start} 0',
-        f'rc {rc_channel_number_stop} 0',
-    ]
+# def send_command_to_wsl(command):
+#     wsl_command = f'screen -S {session_name} -p 0 -X stuff "{command}\\n"'
+#     try:
+#         subprocess.run(wsl_command, shell=True, check=True)
+#         logger.debug(f"Command sent: {command}")
+#     except subprocess.CalledProcessError as e:
+#         logger.error(f"Error sending command to Screen: {e}")
+
+
+# def execute_commands():
+#     logger.info("Executing emergency commands")
+#     commands = [
+#         f'rc {rc_channel_number_start} 1005',
+#         f'rc {rc_channel_number_stop} 1990',
+#         f'rc {rc_channel_number_start} 0',
+#         f'rc {rc_channel_number_stop} 0',
+#     ]
     
-    for command in commands:
-        send_command_to_wsl(command)
-        time.sleep(0.1)
+#     for command in commands:
+#         send_command_to_wsl(command)
+#         time.sleep(0.1)
 
 
-def execute_commands_in_thread():
-    command_thread = threading.Thread(target=execute_commands)
-    command_thread.start()
+# def execute_commands_in_thread():
+#     command_thread = threading.Thread(target=execute_commands)
+#     command_thread.start()
+
 
 def check_ping(host):
     try:
@@ -98,13 +104,12 @@ def check_ping(host):
         logger.error(f"Error converting ping time: {e}")
     except Exception as e:
         logger.error(f"Unexpected error during ping: {e}")
-    
     return None
+
 
 def main():
     logger.info("Starting latency monitoring...")
-    
-    # Iniciar monitoreo de cambios de modo
+
     mode_thread = threading.Thread(target=monitor_mode_changes)
     mode_thread.daemon = True
     mode_thread.start()
@@ -122,24 +127,45 @@ def main():
                 status = "OK" if ping_time <= sensor_time else "HIGH LATENCY"
                 logger.info(f"Latency: {ping_time:.1f}ms | Max: {sensor_time}ms | Mode: {sensor_mode} | Status: {status}")
                 
-                if ping_time > sensor_time and sensor_mode == 1:
-                    logger.warning(f"Latency exceeded threshold: {ping_time:.1f}ms > {sensor_time}ms")
-                    execute_commands_in_thread()
+                if sensor_mode == 1:
+                    if ping_time > sensor_time:
+                        logger.warning(f"Latency exceeded threshold: {ping_time:.1f}ms > {sensor_time}ms")
+                        # execute_commands_in_thread()
+                        sio.emit('latency', {'ping_time': ping_time, 'alert': True})
+                    sio.emit('latency', {'ping_time': ping_time, 'alert': False})
             else:
                 logger.error(f"Connection lost | Mode: {sensor_mode}")
                 if sensor_mode == 1:
-                    execute_commands_in_thread()
+                    sio.emit('latency', {'ping_time': -1, 'alert': True})
             
-            time.sleep(2)
+            time.sleep(5)
             
         except Exception as e:
             logger.error(f"Main loop error: {e}")
             time.sleep(2)
 
+@sio.event
+def connect():
+    print('Conexión establecida con el servidor Socket.IO')
+    main()
+
+
+@sio.event
+def disconnect():
+    print('Desconectado del servidor Socket.IO')
+
+
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        logger.info("Latency monitor stopped by user")
-    except Exception as e:
-        logger.error(f"Fatal error: {e}")
+    while True:
+        try:
+            print("Intentando conectar al servidor Socket.IO...")
+            sio.connect('http://localhost:5000')
+            sio.wait()
+            break
+        except socketio.exceptions.ConnectionError:
+            print("No se pudo conectar al servidor. Reintentando en 5 segundos...")
+            time.sleep(5)
+        except KeyboardInterrupt:
+            logger.info("Latency monitor stopped by user")
+            break
+
