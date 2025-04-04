@@ -37,9 +37,9 @@ checkinternet() {
 		bash "$PROJECT_ROOT/launcher/screen_rover_api.sh" &
 		sleep 10
 
-		# echo "Opening script latency"
-		# bash "$PROJECT_ROOT/launcher/screen_latency.sh" &
-		# sleep 10
+		echo "Opening script latency"
+		bash "$PROJECT_ROOT/launcher/screen_latency.sh" &
+		sleep 10
 
 		# echo "Opening script lidar"
 		# bash "$PROJECT_ROOT/launcher/screen_lidar.sh" &
@@ -53,9 +53,13 @@ checkinternet() {
 		bash "$PROJECT_ROOT/launcher/screen_nextion.sh" &
 		sleep 10
 
-		echo "Opening App Dashboard"
-		bash "$PROJECT_ROOT/launcher/screen_dashboard.sh" &
+		echo "Opening script CUBE listening"
+		bash "$PROJECT_ROOT/launcher/screen_cube.sh" &
 		sleep 10
+
+		# echo "Opening App Dashboard"
+		# bash "$PROJECT_ROOT/launcher/screen_dashboard.sh" &
+		# sleep 10
 
 		echo "Opening meet"
 		bash "$PROJECT_ROOT/launcher/screen_meet.sh" &
