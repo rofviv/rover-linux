@@ -110,6 +110,8 @@ def leer_sensor():
 
 
 def notificar_maestro(sensor, distance):
+    global last_time_detection, is_detection
+    
     try:
         if sensor == 'sonar-4' and sensor_back_status == 0:
             print(f"sonar-4 back status 0 no emit")
@@ -118,12 +120,16 @@ def notificar_maestro(sensor, distance):
             print(f"{sensor} front status 0 no emit")
             return
         
-        if sensor == 'sonar-4' and sensor_back_distance > distance:
+        if sensor == 'sonar-4' and distance > sensor_back_distance:
             print(f"sonar-4 back distance {sensor_back_distance} > {distance} no emit")
             return
-        elif sensor_front_distance > distance:
+        elif distance > sensor_front_distance:
             print(f"{sensor} front distance {sensor_front_distance} > {distance} no emit")
             return
+        
+        if distance > 0:
+            last_time_detection = datetime.now()
+            is_detection = True
         
         print(f"Notificando sensor: {sensor} y distancia: {distance}")
         sio.emit('sensor_data', {'sensor': sensor, 'distance': distance})

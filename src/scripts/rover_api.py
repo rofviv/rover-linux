@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit
 import requests
 import os
-import time
+import subprocess
 
 print("SCRIPT ROVER API - SOCKETIO")
 
@@ -19,6 +19,8 @@ SONAR_FRONT_DISTANCE_FILE = os.path.join(PROJECT_ROOT, 'status', 'sonar_front_di
 LIDAR_DISTANCE_FILE = os.path.join(PROJECT_ROOT, 'status', 'lidar_distance.txt')
 LIDAR_ANGLE_FILE = os.path.join(PROJECT_ROOT, 'status', 'lidar_angle.txt')
 LATENCY_TIME_FILE = os.path.join(PROJECT_ROOT, 'status', 'latency_time_ms.txt')
+
+IP_REMOTE_MAVPROXY = os.getenv('IP_REMOTE_MAVPROXY', '192.168.18.1')
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*",)
@@ -197,14 +199,49 @@ def read_latency_time():
     return jsonify(success=True, message="Latency time read", latency_time=read_file(LATENCY_TIME_FILE))
 
 
+@app.route('/execute_screen/<screen_name>', methods=['POST'])
+def execute_screen(screen_name):
+    if not screen_name:
+        return jsonify({
+            'success': False,
+            'error': 'Screen name is required'
+        })
+
+    try:
+        script_path = f'{PROJECT_ROOT}/launcher/{screen_name}.sh'
+        
+        if not os.path.exists(script_path):
+            return jsonify({
+                'success': False, 
+                'error': f'Script {screen_name}.sh not found'
+            })
+
+        result = subprocess.run(['bash', script_path], capture_output=False, text=True)
+        
+        return jsonify({
+            'success': True,
+            'output': f'{screen_name} executed',
+            'error': result.stderr
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+
 ## SOCKETIO EVENTS
 @socketio.on('connect')
-def connect(auth):
-    print('Client connected', auth)
+def connect():
+    ip = request.remote_addr
+    print('ip CONNECT---', ip)
+    print('Client connected')
 
 
 @socketio.on('disconnect')
 def disconnect(reason):
+    ip = request.remote_addr
+    print('ip DISCONNECT', ip)
     print('Client disconnected, reason:', reason)
 
 
@@ -237,6 +274,11 @@ def set_file(file_path, content):
     with open(file_path, "w") as f:
         f.write(content)
     print(f"File {file_path} set to {content}")
+
+
+def is_remote_ip_connected():
+    global IP_REMOTE_MAVPROXY
+    return IP_REMOTE_MAVPROXY in connected_clients.values()
 
 ## MAIN
 if __name__ == '__main__':
