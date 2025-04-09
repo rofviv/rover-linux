@@ -116,14 +116,14 @@ def notificar_maestro(sensor, distance):
         if sensor == 'sonar-4' and sensor_back_status == 0:
             print(f"sonar-4 back status 0 no emit")
             return
-        elif sensor_front_status == 0:
+        elif sensor != 'sonar-4' and sensor_front_status == 0:
             print(f"{sensor} front status 0 no emit")
             return
         
         if sensor == 'sonar-4' and distance > sensor_back_distance:
             print(f"sonar-4 back distance {sensor_back_distance} > {distance} no emit")
             return
-        elif distance > sensor_front_distance:
+        elif sensor != 'sonar-4' and distance > sensor_front_distance:
             print(f"{sensor} front distance {sensor_front_distance} > {distance} no emit")
             return
         
