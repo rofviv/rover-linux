@@ -23,3 +23,7 @@ sudo wg-quick up wg0
 ip route get 10.13.13.1
 ping 10.13.13.1
 ```
+
+- login to speedify
+patiouser@*****
+Pass****
