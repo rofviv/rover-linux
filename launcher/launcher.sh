@@ -53,6 +53,10 @@ checkinternet() {
 		bash "$PROJECT_ROOT/launcher/screen_nextion.sh" &
 		sleep 10
 
+		echo "Adding routes to launcher rover"
+		bash "$PROJECT_ROOT/launcher/add_ip_route.sh" &
+		sleep 10
+
 		echo "Opening script CUBE listening"
 		bash "$PROJECT_ROOT/launcher/screen_cube.sh" &
 		sleep 10
