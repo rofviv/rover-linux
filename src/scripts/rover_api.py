@@ -28,7 +28,7 @@ RC_CHANNEL_NUMBER_START = os.getenv('RC_CHANNEL_NUMBER_START', '6')
 RC_CHANNEL_NUMBER_STOP = os.getenv('RC_CHANNEL_NUMBER_STOP', '2')
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*", ping_interval=2, ping_timeout=5)
+socketio = SocketIO(app, cors_allowed_origins="*")
 connected_clients = {}
 
 commands_rover = {
@@ -267,8 +267,13 @@ def disconnect(reason):
 @socketio.on('sensor_data')
 def sensor_data(data):
     print('message received with ', data)
-    emit('sensor_data', data, broadcast=True)
 
+    # if not is_remote_ip_connected():
+    #     print("Remote IP not connected STOP")
+    #     execute_command(commands_rover["neutral"])
+    #     execute_command(commands_rover["brake"])
+
+    emit('sensor_data', data, broadcast=True)
 
 @socketio.on('cube_data')
 def cube_data(data):
