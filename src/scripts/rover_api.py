@@ -1,9 +1,12 @@
-# pip install flask-socketio==4.3.2
+# pip install flask-socketio==5.5.1
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit
 import requests
 import os
 import subprocess
+import time
+import threading
+
 
 print("SCRIPT ROVER API - SOCKETIO")
 
@@ -19,17 +22,34 @@ SONAR_FRONT_DISTANCE_FILE = os.path.join(PROJECT_ROOT, 'status', 'sonar_front_di
 LIDAR_DISTANCE_FILE = os.path.join(PROJECT_ROOT, 'status', 'lidar_distance.txt')
 LIDAR_ANGLE_FILE = os.path.join(PROJECT_ROOT, 'status', 'lidar_angle.txt')
 LATENCY_TIME_FILE = os.path.join(PROJECT_ROOT, 'status', 'latency_time_ms.txt')
-
+SESSION_NAME = os.getenv('SESSION_NAME', "mavproxy_session")
 IP_REMOTE_MAVPROXY = os.getenv('IP_REMOTE_MAVPROXY', '192.168.18.1')
+RC_CHANNEL_NUMBER_START = os.getenv('RC_CHANNEL_NUMBER_START', '6')
+RC_CHANNEL_NUMBER_STOP = os.getenv('RC_CHANNEL_NUMBER_STOP', '2')
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*",)
+socketio = SocketIO(app, cors_allowed_origins="*", ping_interval=2, ping_timeout=5)
+connected_clients = {}
 
+commands_rover = {
+    "neutral": [
+        f'rc {RC_CHANNEL_NUMBER_START} 1500',
+        f'rc {RC_CHANNEL_NUMBER_STOP} 0'
+    ],
+    "brake": [
+        f'rc {RC_CHANNEL_NUMBER_STOP} 1990',
+        f'rc {RC_CHANNEL_NUMBER_STOP} 0'
+    ],
+    "add": [
+        f'output add {IP_REMOTE_MAVPROXY}:14550'
+    ]
+}
 
 ## ROUTES API
 @app.route('/')
 def index():
     return jsonify(success=True, message="Rover API", ip_relay=read_file(IP_RELAY_FILE), token=read_file(TOKEN_FILE), latency_status=read_file(LATENCY_STATUS_FILE), lidar_status=read_file(LIDAR_STATUS_FILE), sonar_back_status=read_file(SONAR_BACK_STATUS_FILE), sonar_front_status=read_file(SONAR_FRONT_STATUS_FILE), sonar_back_distance=read_file(SONAR_BACK_DISTANCE_FILE), sonar_front_distance=read_file(SONAR_FRONT_DISTANCE_FILE), lidar_distance=read_file(LIDAR_DISTANCE_FILE), lidar_angle=read_file(LIDAR_ANGLE_FILE), latency_time=read_file(LATENCY_TIME_FILE))
+
 
 @app.route('/set_ip_relay', methods=['POST'])
 def set_ip_relay():
@@ -234,16 +254,15 @@ def execute_screen(screen_name):
 @socketio.on('connect')
 def connect():
     ip = request.remote_addr
-    print('ip CONNECT---', ip)
+    connected_clients[ip] = {'connected': True, 'timestamp': time.time()}
     print('Client connected')
 
 
 @socketio.on('disconnect')
 def disconnect(reason):
     ip = request.remote_addr
-    print('ip DISCONNECT', ip)
-    print('Client disconnected, reason:', reason)
-
+    connected_clients[ip]['timestamp'] = time.time() - 2
+    print(f'Client {ip} disconnected')
 
 @socketio.on('sensor_data')
 def sensor_data(data):
@@ -256,13 +275,21 @@ def cube_data(data):
     print('message received with ', data)
     emit('cube_data', data, broadcast=True)
 
+
 @socketio.on('latency')
 def latency(data):
     print('message received with ', data)
     emit('latency', data, broadcast=True)
 
+
+@socketio.on('heartbeat')
+def on_heartbeat(data):
+    ip = request.remote_addr
+    connected_clients[ip] = {'connected': True, 'timestamp': time.time()}
+
+
 ## FUNCTIONS
-def read_file(file_path):
+def read_file(file_path) -> str | None:
     try:
         with open(file_path, "r") as f:
             return f.read().strip()
@@ -270,16 +297,48 @@ def read_file(file_path):
         print(f"Error al leer el archivo {file_path}: {e}")
 
 
-def set_file(file_path, content):
+def set_file(file_path, content) -> None:
     with open(file_path, "w") as f:
         f.write(content)
     print(f"File {file_path} set to {content}")
 
 
-def is_remote_ip_connected():
+def is_remote_ip_connected() -> bool:
     global IP_REMOTE_MAVPROXY
-    return IP_REMOTE_MAVPROXY in connected_clients.values()
+    return IP_REMOTE_MAVPROXY in connected_clients.keys()
+
+
+def monitor_heartbeats() -> None:
+    while True:
+        now = time.time()
+        for ip, last in list(connected_clients.items()):
+            if now - last['timestamp'] > 2 and last['connected']:
+                connected_clients[ip]['connected'] = False
+                print(f"Cliente {ip} sin comunicación desde hace {int(now - last['timestamp'])}s. Posible desconexión.")
+                if ip == IP_REMOTE_MAVPROXY:
+                    execute_command(commands_rover["neutral"])
+        time.sleep(1)
+
+
+def execute_command(commands):
+    print("execute_command", commands)
+    for command in commands:
+        send_command_to_rover(command)
+        time.sleep(0.1)
+
+
+def send_command_to_rover(command):
+    global SESSION_NAME
+
+    wsl_command = f'screen -S {SESSION_NAME} -p 0 -X stuff "{command}\\n"'
+    try:
+        subprocess.run(wsl_command, shell=True)
+    except Exception as e:
+        print(f"Error al enviar comando a Screen: {e}")
+
 
 ## MAIN
 if __name__ == '__main__':
+    threading.Thread(target=monitor_heartbeats, daemon=True).start()
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+
