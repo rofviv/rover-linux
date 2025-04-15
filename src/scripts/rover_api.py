@@ -264,6 +264,7 @@ def disconnect(reason):
     connected_clients[ip]['timestamp'] = time.time() - 2
     print(f'Client {ip} disconnected')
 
+
 @socketio.on('sensor_data')
 def sensor_data(data):
     print('message received with ', data)
