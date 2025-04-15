@@ -70,6 +70,7 @@ def sync_data_relay():
         data = requests.get(f"http://{read_file(IP_RELAY_FILE)}", timeout=8)
         return jsonify(success=True, message="Data relay sync", data=data.json())
     except requests.Timeout:
+        execute_screen("find_esp_ip")
         return jsonify(success=False, message="Timeout error - Error al sincronizar los datos")
     except Exception as e:
         return jsonify(success=False, message="Error al sincronizar los datos", error=str(e))
@@ -221,6 +222,7 @@ def read_latency_time():
 
 @app.route('/execute_screen/<screen_name>', methods=['POST'])
 def execute_screen(screen_name):
+    print("execute_screen", screen_name)
     if not screen_name:
         return jsonify({
             'success': False,
