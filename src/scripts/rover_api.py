@@ -34,10 +34,10 @@ connected_clients = {}
 commands_rover = {
     "neutral": [
         f'rc {RC_CHANNEL_NUMBER_START} 1500',
-        f'rc {RC_CHANNEL_NUMBER_STOP} 0'
+        f'rc {RC_CHANNEL_NUMBER_START} 0'
     ],
     "brake": [
-        f'rc {RC_CHANNEL_NUMBER_STOP} 1990',
+        f'rc {RC_CHANNEL_NUMBER_STOP} 1000',
         f'rc {RC_CHANNEL_NUMBER_STOP} 0'
     ],
     "add": [
@@ -268,16 +268,16 @@ def disconnect(reason):
 def sensor_data(data):
     print('message received with ', data)
 
-    # if not is_remote_ip_connected():
-    #     print("Remote IP not connected STOP")
-    #     execute_command(commands_rover["neutral"])
-    #     execute_command(commands_rover["brake"])
+    if not is_remote_ip_connected():
+        print("Remote IP not connected STOP")
+        execute_command(commands_rover["neutral"])
+        execute_command(commands_rover["brake"])
 
     emit('sensor_data', data, broadcast=True)
 
+
 @socketio.on('cube_data')
 def cube_data(data):
-    print('message received with ', data)
     emit('cube_data', data, broadcast=True)
 
 
@@ -309,8 +309,7 @@ def set_file(file_path, content) -> None:
 
 
 def is_remote_ip_connected() -> bool:
-    global IP_REMOTE_MAVPROXY
-    return IP_REMOTE_MAVPROXY in connected_clients.keys()
+    return connected_clients.get(IP_REMOTE_MAVPROXY, {}).get('connected', False)
 
 
 def monitor_heartbeats() -> None:
