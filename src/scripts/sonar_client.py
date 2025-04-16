@@ -13,10 +13,10 @@ port_arduino = os.getenv('PORT_ARDUINO', '/dev/arduino')
 arduino = serial.Serial(port=port_arduino, baudrate=9600, timeout=1)
 arduino.reset_input_buffer()
 
-sensor_front_status = 1
+sensor_front_status = 0
 sensor_back_status = 0
-sensor_front_distance = 20
-sensor_back_distance = 80
+sensor_front_distance = 0
+sensor_back_distance = 0
 
 last_time_detection = datetime.now()
 is_detection = False
@@ -26,7 +26,9 @@ def read_sensor_front_status():
     try:
         with open(f"{project_root}/status/sonar_front_status.txt", "r") as file:
             mode = file.read().strip()
-            sensor_front_status = int(mode)
+            if mode != str(sensor_front_status):
+                sensor_front_status = int(mode)
+                print(f"Estado del sensor frontal actualizado a {sensor_front_status}")
     except Exception as e:
         print(f"Error al leer el archivo sonar_front_status.txt: {e}")
 
@@ -36,7 +38,9 @@ def read_sensor_back_status():
     try:
         with open(f"{project_root}/status/sonar_back_status.txt", "r") as file:
             mode = file.read().strip()
-            sensor_back_status = int(mode)
+            if mode != str(sensor_back_status):
+                sensor_back_status = int(mode)
+                print(f"Estado del sensor trasero actualizado a {sensor_back_status}")
     except Exception as e:
         print(f"Error al leer el archivo sonar_back_status.txt: {e}")
 
@@ -45,8 +49,10 @@ def read_sensor_front_distance():
     global sensor_front_distance
     try:
         with open(f"{project_root}/status/sonar_front_distance.txt", "r") as file:
-            mode = file.read().strip()
-            sensor_front_distance = int(mode)
+            new_distance = file.read().strip()
+            if new_distance != str(sensor_front_distance):
+                sensor_front_distance = int(new_distance)
+                print(f"Distancia actualizada a {sensor_front_distance}")
     except Exception as e:
         print(f"Error al leer el archivo sonar_front_distance.txt: {e}")
 
@@ -55,8 +61,10 @@ def read_sensor_back_distance():
     global sensor_back_distance
     try:
         with open(f"{project_root}/status/sonar_back_distance.txt", "r") as file:
-            mode = file.read().strip()
-            sensor_back_distance = int(mode)
+            new_distance = file.read().strip()
+            if new_distance != str(sensor_back_distance):
+                sensor_back_distance = int(new_distance)
+                print(f"Distancia actualizada a {sensor_back_distance}")
     except Exception as e:
         print(f"Error al leer el archivo sonar_back_distance.txt: {e}")
 
@@ -79,11 +87,6 @@ def leer_sensor():
     read_sensor_back_status()
     read_sensor_front_distance()
     read_sensor_back_distance()
-    print(f"Sonar Status: {sensor_front_status}")
-    print(f"Sonar Status Mode Back: {sensor_back_status}")
-    print(f"Sonar Distance: {sensor_front_distance}")
-    print(f"Sonar Distance Mode Back: {sensor_back_distance}")
-
 
     try:
         while True:
@@ -114,24 +117,18 @@ def notificar_maestro(sensor, distance):
     
     try:
         if sensor == 'sonar-4' and sensor_back_status == 0:
-            print(f"sonar-4 back status 0 no emit")
             return
         elif sensor != 'sonar-4' and sensor_front_status == 0:
-            print(f"{sensor} front status 0 no emit")
             return
         
         if sensor == 'sonar-4' and distance > sensor_back_distance:
-            print(f"sonar-4 back distance {sensor_back_distance} > {distance} no emit")
             return
         elif sensor != 'sonar-4' and distance > sensor_front_distance:
-            print(f"{sensor} front distance {sensor_front_distance} > {distance} no emit")
             return
         
         if distance > 0:
             last_time_detection = datetime.now()
             is_detection = True
-        
-        print(f"Notificando sensor: {sensor} y distancia: {distance}")
         sio.emit('sensor_data', {'sensor': sensor, 'distance': distance})
     except ConnectionRefusedError:
         print('No se pudo conectar con el maestro. Reintentando...')
