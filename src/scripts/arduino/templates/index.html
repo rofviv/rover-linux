@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Control de Robot</title>
+  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+  <h2>Presiona W para avanzar, A para girar izquierda, D para girar derecha</h2>
+  <pre id="console" style="background:#111; color:#0f0; padding:10px; height:200px; overflow:auto;"></pre>
+
+  <script>
+    const socket = io("http://localhost:5000");  // Cambia si tu server está en otra IP/puerto
+
+    document.addEventListener('keydown', (e) => {
+      if (['W', 'A', 'D'].includes(e.key.toUpperCase())) {
+        socket.emit('tecla', { key: e.key.toUpperCase() });
+      }
+    });
+
+    socket.on('arduino_output', (data) => {
+      const consola = document.getElementById('console');
+      consola.textContent += data.linea + '\n';
+      consola.scrollTop = consola.scrollHeight;
+    });
+  </script>
+</body>
+</html>
