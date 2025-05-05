@@ -9,7 +9,10 @@
   <pre id="console" style="background:#111; color:#0f0; padding:10px; height:200px; overflow:auto;"></pre>
 
   <script>
-    const socket = io("http://localhost:5000");  // Cambia si tu server está en otra IP/puerto
+    //const socket = io("http://localhost:5000");
+    // Obtener la URL actual del navegador
+    // const serverUrl = window.location.protocol + '//' + window.location.host;
+    // const socket = io(serverUrl);  // Esto se conectará automáticamente a la IP correcta
 
     document.addEventListener('keydown', (e) => {
       if (['W', 'A', 'D'].includes(e.key.toUpperCase())) {

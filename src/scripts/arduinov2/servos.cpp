@@ -13,27 +13,13 @@ uint8_t velA = 0, velB = 0;
 String linea = "";
 
 void rampaParalela(uint8_t &actualA, uint8_t destinoA, uint8_t &actualB, uint8_t destinoB, float factorA, float factorB) {
-  destinoA = constrain(destinoA, PWM_MIN, PWM_MAX);
-  destinoB = constrain(destinoB, PWM_MIN, PWM_MAX);
+  actualA = constrain(destinoA, PWM_MIN, PWM_MAX);
+  actualB = constrain(destinoB, PWM_MIN, PWM_MAX);
 
-  while (actualA != destinoA || actualB != destinoB) {
-    if (actualA < destinoA) {
-      actualA++;
-    } else if (actualA > destinoA) {
-      actualA--;
-    }
-    analogWrite(THR_A_PIN, constrain(actualA * factorA, 0, 255));
-
-    if (actualB < destinoB) {
-      actualB++;
-    } else if (actualB > destinoB) {
-      actualB--;
-    }
-    analogWrite(THR_B_PIN, constrain(actualB * factorB, 0, 255));
-
-    delay(RAMP_MS);
-  }
+  analogWrite(THR_A_PIN, constrain(actualA * factorA, 0, 255));
+  analogWrite(THR_B_PIN, constrain(actualB * factorB, 0, 255));
 }
+
 
 void setup() {
   pinMode(THR_A_PIN, OUTPUT);

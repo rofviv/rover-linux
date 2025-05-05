@@ -4,29 +4,27 @@ import serial
 import time
 import threading
 
-# Configuración del servidor Flask + SocketIO
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins='*')
 
-max_speed = 80
+default_speed = 80
+default_factorA = 1.00
+default_factorB = 1.00
 
-# Configuración del puerto serial
 arduino = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
 time.sleep(2)  # Espera a que el Arduino reinicie
 
-# Variables de estado
+
 last_command_time = 0
 command_lock = threading.Lock()
 current_motion = None
 COMMAND_TIMEOUT = 0.5  # segundos
 
-# Función para enviar comandos al Arduino
-def enviar_comando(velocidad):
-    comando = f"M{velocidad}\n"
+def enviar_comando(velocidad_izq, velocidad_der):
+    comando = f"M{velocidad_izq}-{factorA:.2f},{velocidad_der}-{factorB:.2f}\n"
     arduino.write(comando.encode())
-    print(f"[SERIAL →] {comando.strip()}")
 
-# Hilo que monitorea el puerto serial constantemente
+
 def monitor_serial():
     while True:
         if arduino.in_waiting:
@@ -35,45 +33,44 @@ def monitor_serial():
                 print(f"[SERIAL ←] {linea}")
                 socketio.emit('arduino_output', {'linea': linea})
 
-# Hilo de seguridad que detiene los motores si no hay comandos recientes
+
 def watchdog_loop():
     global last_command_time, current_motion
     while True:
         time.sleep(0.1)
         with command_lock:
             if current_motion is not None and (time.time() - last_command_time > COMMAND_TIMEOUT):
-                enviar_comando(0)
+                enviar_comando(0, 0)
                 current_motion = None
                 print("[INFO] Motores detenidos por inactividad")
 
-# Iniciar hilos en segundo plano
+
 threading.Thread(target=monitor_serial, daemon=True).start()
 threading.Thread(target=watchdog_loop, daemon=True).start()
 
-# Evento cuando el cliente presiona una tecla
-@socketio.on('tecla')
-def on_tecla(data):
-    global last_command_time, current_motion
-    key = data.get('key')
-    
-    if key == 'W':  # Avanzar
-        comando = f"M{max_speed}\n"  # Ambos motores a velocidad máxima
-    elif key == 'A':  # Girar izquierda
-        comando = f"A0B{max_speed}\n"  # Motor A detenido, B a máxima velocidad
-    elif key == 'D':  # Girar derecha
-        comando = f"B0A{max_speed}\n"  # Motor A a máxima velocidad, B detenido
+
+@socketio.on('movimiento')
+def on_movimiento(data):
+    global last_command_time, current_motion, factorA, factorB
+
+    keys = data.get('keys', [])
+    factorA = float(data.get('factorA', default_factorA))
+    factorB = float(data.get('factorB', default_factorB))
+
+    velocidad_izq = default_speed if 'W' in keys else 0
+    velocidad_der = default_speed if 'E' in keys else 0
+
+    nuevo_motion = (velocidad_izq, velocidad_der, factorA, factorB)
 
     with command_lock:
         last_command_time = time.time()
-        if current_motion != comando:
-            arduino.write(comando.encode())
-            print(f"[SERIAL →] {comando.strip()}")
-            current_motion = comando
+        if current_motion != nuevo_motion:
+            enviar_comando(velocidad_izq, velocidad_der)
+            current_motion = nuevo_motion
 
 @app.route('/')
 def index():
-    return render_template('index.html')  # busca en la carpeta "templates"
+    return render_template('index.html')
 
-# Ejecutar servidor
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
