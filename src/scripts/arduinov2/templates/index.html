@@ -6,6 +6,8 @@
 </head>
 <body>
   <h2>Presiona W para rueda izquierda, E para la derecha</h2>
+  <label>Velocidad Izq: <input type="number" min="0" max="255" id="speedA" value="80"></label>
+  <label>Velocidad Der: <input type="number" min="0" max="255" id="speedB" value="80"></label><br>
   <label>Factor Izq (A): <input type="number" step="0.01" id="factorA" value="1.00"></label>
   <label>Factor Der (B): <input type="number" step="0.01" id="factorB" value="1.00"></label>
   <pre id="console" style="background:#111; color:#0f0; padding:10px; height:200px; overflow:auto;"></pre>
@@ -14,18 +16,22 @@
     const socket = io("http://localhost:5000");
 
     const keysPressed = new Set();
-    const defaultSpeed = 80;
 
     function actualizarMovimiento() {
       const acciones = Array.from(keysPressed);
-      const velA = acciones.includes('W') ? defaultSpeed : 0;
-      const velB = acciones.includes('E') ? defaultSpeed : 0;
+      const speedA = parseInt(document.getElementById('speedA').value) || 80;
+      const speedB = parseInt(document.getElementById('speedB').value) || 80;
+      
+      const velA = acciones.includes('W') ? speedA : 0;
+      const velB = acciones.includes('E') ? speedB : 0;
 
       const factorA = parseFloat(document.getElementById('factorA').value) || 1.0;
       const factorB = parseFloat(document.getElementById('factorB').value) || 1.0;
 
       socket.emit('movimiento', {
         keys: acciones,
+        speedA: speedA,
+        speedB: speedB,
         factorA: factorA,
         factorB: factorB
       });

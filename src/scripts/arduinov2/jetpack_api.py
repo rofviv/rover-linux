@@ -54,11 +54,13 @@ def on_movimiento(data):
     global last_command_time, current_motion, factorA, factorB
 
     keys = data.get('keys', [])
+    speedA = int(data.get('speedA', default_speed))
+    speedB = int(data.get('speedB', default_speed))
     factorA = float(data.get('factorA', default_factorA))
     factorB = float(data.get('factorB', default_factorB))
 
-    velocidad_izq = default_speed if 'W' in keys else 0
-    velocidad_der = default_speed if 'E' in keys else 0
+    velocidad_izq = speedA if 'W' in keys else 0
+    velocidad_der = speedB if 'E' in keys else 0
 
     nuevo_motion = (velocidad_izq, velocidad_der, factorA, factorB)
 
