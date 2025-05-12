@@ -11,9 +11,14 @@ default_speed = 80
 default_factorA = 1.00
 default_factorB = 1.00
 
-arduino = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
-time.sleep(2)  # Espera a que el Arduino reinicie
+port_serial = "/dev/ttyACM0"
+ip_local = "localhost"
 
+required_arduino = False
+
+if required_arduino:
+    arduino = serial.Serial(port_serial, 9600, timeout=1)
+    time.sleep(2)  # Espera a que el Arduino reinicie
 
 last_command_time = 0
 command_lock = threading.Lock()
@@ -22,16 +27,18 @@ COMMAND_TIMEOUT = 0.5  # segundos
 
 def enviar_comando(velocidad_izq, velocidad_der):
     comando = f"M{velocidad_izq}-{factorA:.2f},{velocidad_der}-{factorB:.2f}\n"
-    arduino.write(comando.encode())
+    if required_arduino:
+        arduino.write(comando.encode())
 
 
 def monitor_serial():
-    while True:
-        if arduino.in_waiting:
-            linea = arduino.readline().decode(errors='ignore').strip()
-            if linea:
-                print(f"[SERIAL ←] {linea}")
-                socketio.emit('arduino_output', {'linea': linea})
+    if required_arduino:
+        while True:
+            if arduino.in_waiting:
+                linea = arduino.readline().decode(errors='ignore').strip()
+                if linea:
+                    print(f"[SERIAL ←] {linea}")
+                    socketio.emit('arduino_output', {'linea': linea})
 
 
 def watchdog_loop():
@@ -56,8 +63,8 @@ def on_movimiento(data):
     keys = data.get('keys', [])
     speedA = int(data.get('speedA', default_speed))
     speedB = int(data.get('speedB', default_speed))
-    factorA = float(data.get('factorA', default_factorA))
-    factorB = float(data.get('factorB', default_factorB))
+    factorA = default_factorA
+    factorB = default_factorB
 
     velocidad_izq = speedA if 'W' in keys else 0
     velocidad_der = speedB if 'E' in keys else 0
@@ -72,7 +79,7 @@ def on_movimiento(data):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', ip_local=ip_local)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
