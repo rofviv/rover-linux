@@ -11,12 +11,15 @@ default_speed = 80
 default_factorA = 1.00
 default_factorB = 1.00
 
+# CHANGE DEVICE PORT AND IP LOCAL VPN WIREGUARD
 port_serial = "/dev/ttyACM0"
 ip_local = "localhost"
 
-required_arduino = False
+# FALSE IS Development MODE. TRUE IS Production MODE.
+is_production = False
 
-if required_arduino:
+
+if is_production:
     arduino = serial.Serial(port_serial, 9600, timeout=1)
     time.sleep(2)  # Espera a que el Arduino reinicie
 
@@ -27,12 +30,12 @@ COMMAND_TIMEOUT = 0.5  # segundos
 
 def enviar_comando(velocidad_izq, velocidad_der):
     comando = f"M{velocidad_izq}-{factorA:.2f},{velocidad_der}-{factorB:.2f}\n"
-    if required_arduino:
+    if is_production:
         arduino.write(comando.encode())
 
 
 def monitor_serial():
-    if required_arduino:
+    if is_production:
         while True:
             if arduino.in_waiting:
                 linea = arduino.readline().decode(errors='ignore').strip()
