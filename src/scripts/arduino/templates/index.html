@@ -18,11 +18,63 @@
     <input type="number" id="boost2Value" value="10" min="0" max="255">
   </div>
   <pre id="console" style="background:#111; color:#0f0; padding:10px; height:200px; overflow:auto;"></pre>
+  <label><button type="button" id="motor_adelante" onclick="setActuatorsData('f', this.checked ? 'on' : 'off')">Puerta abierta</button></label>
+  <br>
+  <label><button type="button" id="motor_reversa" onclick="setActuatorsData('r', this.checked ? 'on' : 'off')">Puerta cerrada</button></label>
+  <br>
+  <label><button type="button" id="motor_detenido" onclick="setActuatorsData('s', this.checked ? 'on' : 'off')">Puerta detenida</button></label>
+  <br>
+  <label><input type="checkbox" id="guiñador_izquierdo" onclick="setActuatorsData('iz', this.checked ? 'on' : 'off')">Guiñador izquierdo</label>
+  <br>
+  <label><input type="checkbox" id="guiñador_derecho" onclick="setActuatorsData('dr', this.checked ? 'on' : 'off')">Guiñador derecho</label>
+  <br>
+  <label><input type="checkbox" id="reversa_motor_1" onclick="setActuatorsData('rev1', this.checked ? 'on' : 'off')">Reversa motor 1</label>
+  <br>
+  <label><input type="checkbox" id="reversa_motor_2" onclick="setActuatorsData('rev2', this.checked ? 'on' : 'off')">Reversa motor 2</label>
+  <br>
+  <label><input type="checkbox" id="carga_autonoma" onclick="setActuatorsData('charge', this.checked ? 'on' : 'off')">Carga autónoma activada</label>
+  <br>
+  
+  <label>Puerta lateral (Min, Max):
+    <input type="number" min="0" max="180" id="puerta_lateral_min" value="0">
+    <input type="number" min="0" max="180" id="puerta_lateral_max" value="180">
+    <button id="puerta_lateral_min" onclick="setActuatorsData(0, document.getElementById('puerta_lateral_min').value)">Min</button>
+    <button id="puerta_lateral_max" onclick="setActuatorsData(0, document.getElementById('puerta_lateral_max').value)">Max</button>
+  </label>
+  <br>
+  <label>Camara (Min, Max):
+    <input type="number" min="0" max="180" id="camara_min" value="0">
+    <input type="number" min="0" max="180" id="camara_max" value="180">
+    <button id="camara_min" onclick="setActuatorsData(1, document.getElementById('camara_min').value)">Min</button>
+    <button id="camara_max" onclick="setActuatorsData(1, document.getElementById('camara_max').value)">Max</button>
+  </label>
+  <br>
+  <label>Freno Izquierdo (Min, Max):
+    <input type="number" min="0" max="180" id="freno_izquierdo_min" value="0">
+    <input type="number" min="0" max="180" id="freno_izquierdo_max" value="180">
+    <button id="freno_izquierdo_min" onclick="setActuatorsData(2, document.getElementById('freno_izquierdo_min').value)">Min</button>
+    <button id="freno_izquierdo_max" onclick="setActuatorsData(2, document.getElementById('freno_izquierdo_max').value)">Max</button>
+  </label>
+  <br>
+  <label>Freno Derecho (Min, Max):
+    <input type="number" min="0" max="180" id="freno_derecho_min" value="0">
+    <input type="number" min="0" max="180" id="freno_derecho_max" value="180">
+    <button id="freno_derecho_min" onclick="setActuatorsData(3, document.getElementById('freno_derecho_min').value)">Min</button>
+    <button id="freno_derecho_max" onclick="setActuatorsData(3, document.getElementById('freno_derecho_max').value)">Max</button>
+  </label>
+  <pre id="console_actuators" style="background:#111; color:#0f0; padding:10px; height:200px; overflow:auto;"></pre>
 
   <script>
     const socket = io("http://{{ ip_local }}:5000");
 
     const keysPressed = new Set();
+
+    function setActuatorsData(servo, angle) {
+      socket.emit('actuators', {
+        key: servo,
+        value: angle,
+      });
+    }
 
     function actualizarMovimiento() {
       const acciones = Array.from(keysPressed);
@@ -70,6 +122,7 @@
         const checkbox = document.getElementById('boost2');
         checkbox.checked = !checkbox.checked;
       }
+
     });
 
     document.addEventListener('keyup', (e) => {
@@ -79,6 +132,12 @@
 
     socket.on('arduino_output', (data) => {
       const consola = document.getElementById('console');
+      consola.textContent += data.linea + '\n';
+      consola.scrollTop = consola.scrollHeight;
+    });
+
+    socket.on('arduino_output_actuators', (data) => {
+      const consola = document.getElementById('console_actuators');
       consola.textContent += data.linea + '\n';
       consola.scrollTop = consola.scrollHeight;
     });

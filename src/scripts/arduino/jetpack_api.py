@@ -13,20 +13,27 @@ default_factorB = 1.00
 
 # CHANGE DEVICE PORT AND IP LOCAL VPN WIREGUARD
 port_serial = "/dev/ttyACM0"
-ip_local = "localhost"
+port_serial_actuators = "/dev/ttyUSB1"
+ip_local = "127.0.0.1"
 
 # FALSE IS Development MODE. TRUE IS Production MODE.
-is_production = False
-
+is_production = True
+is_production_actuators = True
 
 if is_production:
     arduino = serial.Serial(port_serial, 9600, timeout=1)
-    time.sleep(2)  # Espera a que el Arduino reinicie
+    time.sleep(2)
+
+
+if is_production_actuators:
+    arduino_actuators = serial.Serial(port_serial_actuators, 115200, timeout=1)
+    time.sleep(2)
 
 last_command_time = 0
 command_lock = threading.Lock()
 current_motion = None
 COMMAND_TIMEOUT = 0.5  # segundos
+
 
 def enviar_comando(velocidad_izq, velocidad_der):
     comando = f"M{velocidad_izq}-{factorA:.2f},{velocidad_der}-{factorB:.2f}\n"
@@ -35,14 +42,18 @@ def enviar_comando(velocidad_izq, velocidad_der):
 
 
 def monitor_serial():
-    if is_production:
-        while True:
+    while True:
+        if is_production:
             if arduino.in_waiting:
                 linea = arduino.readline().decode(errors='ignore').strip()
                 if linea:
-                    print(f"[SERIAL ←] {linea}")
                     socketio.emit('arduino_output', {'linea': linea})
 
+        if is_production_actuators:
+            if arduino_actuators.in_waiting:
+                linea = arduino_actuators.readline().decode(errors='ignore').strip()
+                if linea:
+                    socketio.emit('arduino_output_actuators', {'linea': linea})
 
 def watchdog_loop():
     global last_command_time, current_motion
@@ -79,6 +90,39 @@ def on_movimiento(data):
         if current_motion != nuevo_motion:
             enviar_comando(velocidad_izq, velocidad_der)
             current_motion = nuevo_motion
+
+@socketio.on('actuators')
+def on_actuators(data):
+    if data.get('key') == 'f':
+        comando = f"f\n".encode('utf-8')
+    elif data.get('key') == 'r':
+        comando = f"r\n".encode('utf-8')
+    elif data.get('key') == 's':
+        comando = f"s\n".encode('utf-8')
+    elif data.get('key') == 'dr' and data.get('value') == 'on':
+        comando = f"dr on\n".encode('utf-8')
+    elif data.get('key') == 'dr' and data.get('value') == 'off':
+        comando = f"dr off\n".encode('utf-8')
+    elif data.get('key') == 'iz' and data.get('value') == 'on':
+        comando = f"iz on\n".encode('utf-8')
+    elif data.get('key') == 'iz' and data.get('value') == 'off':
+        comando = f"iz off\n".encode('utf-8')
+    elif data.get('key') == 'rev1' and data.get('value') == 'on':
+        comando = f"rev1 on\n".encode('utf-8')
+    elif data.get('key') == 'rev1' and data.get('value') == 'off':
+        comando = f"rev1 off\n".encode('utf-8')
+    elif data.get('key') == 'rev2' and data.get('value') == 'on':
+        comando = f"rev2 on\n".encode('utf-8')
+    elif data.get('key') == 'rev2' and data.get('value') == 'off':
+        comando = f"rev2 off\n".encode('utf-8')
+    elif data.get('key') == 'charge' and data.get('value') == 'on':
+        comando = f"charge on\n".encode('utf-8')
+    elif data.get('key') == 'charge' and data.get('value') == 'off':
+        comando = f"charge off\n".encode('utf-8')
+    else:
+        comando = f"{data.get('key')} {data.get('value')}\n".encode('utf-8')
+        
+    arduino_actuators.write(comando)
 
 @app.route('/')
 def index():
