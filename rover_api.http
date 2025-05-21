@@ -16,11 +16,11 @@ GET http://localhost:5000/read_ip_relay HTTP/1.1
 GET http://localhost:5000/sync_data_relay HTTP/1.1
 
 ### TOGGLE DATA RELAY
-POST http://localhost:5000/toggle_data_relay HTTP/1.1
+POST http://10.13.13.5:5000/toggle_data_relay HTTP/1.1
 content-type: application/json
 
 {
-    "relay_id": "3"
+    "relay_id": "8"
 }
 
 

@@ -37,9 +37,9 @@ checkinternet() {
 		bash "$PROJECT_ROOT/launcher/screen_rover_api.sh" &
 		sleep 10
 
-		echo "Opening script latency"
-		bash "$PROJECT_ROOT/launcher/screen_latency.sh" &
-		sleep 10
+		# echo "Opening script latency"
+		# bash "$PROJECT_ROOT/launcher/screen_latency.sh" &
+		# sleep 10
 
 		# echo "Opening script lidar"
 		# bash "$PROJECT_ROOT/launcher/screen_lidar.sh" &

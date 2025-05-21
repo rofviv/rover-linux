@@ -1,3 +1,6 @@
+# readlink -f $(which python3)
+# sudo setcap cap_net_raw+eip /usr/bin/python3.10
+
 import os
 import netifaces
 import ipaddress
