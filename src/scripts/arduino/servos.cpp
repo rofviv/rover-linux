@@ -1,5 +1,5 @@
-#define THR_A_PIN 44
-#define THR_B_PIN 45
+#define THR_A_PIN 5
+#define THR_B_PIN 6
 
 const uint8_t PWM_MIN = 0;
 const uint8_t PWM_MAX = 255;

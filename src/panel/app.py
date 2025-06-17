@@ -12,11 +12,12 @@ app = Flask(__name__)
 
 # Variable global para almacenar la hora de inicio
 START_TIME = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+project_root = os.getenv('PROJECT_ROOT', '')
 
 def get_launcher_dir():
     if hasattr(app, 'launcher_dir'):
         return app.launcher_dir
-    return '../../launcher'
+    return f'{project_root}/launcher'
 
 @app.route('/')
 def index():
@@ -135,4 +136,4 @@ if __name__ == '__main__':
     launcher_thread.daemon = True
     launcher_thread.start()
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=9000, debug=True)
