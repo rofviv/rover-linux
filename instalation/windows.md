@@ -21,12 +21,12 @@ En el archivo .conf de wireguard, actualizar la siguiente linea:
 AllowedIPs = 0.0.0.0/0 -> AllowedIPs = 10.13.13.0/24
 ```
 
-Ejecutar como administrador el siguiente comando:
+Ejecutar como administrador el siguiente comando, no olvidar cambiar el 10.13.13.8 por la ip de la vpn:
 
 ```bash
 route -p add 10.13.13.0 mask 255.255.255.0 10.13.13.8 if 14
 route -p add 10.13.13.1 mask 255.255.255.255 10.13.13.8 if 14
-
+route -p add 10.13.13.0 mask 255.255.255.0 10.13.13.8 if 14
 ```
 
 Verificar conexion a internet despues de realizar las configuraciones.
