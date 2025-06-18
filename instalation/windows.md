@@ -27,6 +27,9 @@ Ejecutar como administrador el siguiente comando, no olvidar cambiar el 10.13.13
 route -p add 10.13.13.0 mask 255.255.255.0 10.13.13.8 if 14
 route -p add 10.13.13.1 mask 255.255.255.255 10.13.13.8 if 14
 route -p add 10.13.13.0 mask 255.255.255.0 10.13.13.8 if 14
+
+route -p add 192.168.18.0 mask 255.255.255.0 10.13.13.1 if 14
+
 ```
 
 Verificar conexion a internet despues de realizar las configuraciones.
