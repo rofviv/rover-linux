@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control de Robot</title>
+  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at center, #0f0f0f, #070707);
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #00ffc3;
+      font-weight: 500;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 25px;
+      max-width: 700px;
+      margin: auto;
+      box-shadow: 0 0 30px rgba(0, 255, 195, 0.1);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      color: #00ffc3;
+      margin-bottom: 10px;
+      margin-top: 30px;
+      font-weight: 500;
+    }
+
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    .control-group label {
+      flex: 1 1 45%;
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+    }
+
+    input[type="number"],
+    input[type="checkbox"] {
+      margin-top: 6px;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      background-color: #1c1c1c;
+      color: #00ffc3;
+      outline: none;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    .checkbox-inline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      flex: 1 1 100%;
+    }
+
+    .console {
+      background: #111;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      padding: 12px;
+      height: 200px;
+      overflow-y: auto;
+      border-radius: 8px;
+      border: 1px solid #333;
+      font-size: 13px;
+    }
+
+    strong {
+      color: #fff;
+    }
+
+    @media (max-width: 600px) {
+      .control-group {
+        flex-direction: column;
+      }
+      .checkbox-inline {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Panel de Control de Robot</h2>
+
+  <div class="card">
+    <div class="section-title">Controles Principales</div>
+    <p>Presiona <strong>W</strong> para la rueda izquierda y <strong>E</strong> para la derecha.</p>
+
+    <div class="control-group">
+      <label>Velocidad Izquierda
+        <input type="number" min="0" max="255" id="speedA" value="80" />
+      </label>
+      <label>Velocidad Derecha
+        <input type="number" min="0" max="255" id="speedB" value="80" />
+      </label>
+    </div>
+
+    <div class="section-title">Boosts</div>
+    <div class="control-group">
+      <label class="checkbox-inline">
+        <input type="checkbox" id="boost1" />
+        Boost 1 (Tecla 1)
+        <input type="number" id="boost1Value" value="5" min="0" max="255" />
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="boost2" />
+        Boost 2 (Tecla 2)
+        <input type="number" id="boost2Value" value="10" min="0" max="255" />
+      </label>
+    </div>
+
+    <div class="section-title">Reversa</div>
+    <div class="control-group">
+      <label class="checkbox-inline">
+        <input type="checkbox" id="reversa_motor_1" onclick="setActuatorsData('s', this.checked ? 'on' : 'off')" />
+        Motor 1 (S)
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="reversa_motor_2" onclick="setActuatorsData('d', this.checked ? 'on' : 'off')" />
+        Motor 2 (D)
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="reversa_ambos" onclick="setActuatorsData('a', this.checked ? 'on' : 'off')" />
+        Ambos (A)
+      </label>
+    </div>
+
+    <div class="section-title">Consola Arduino</div>
+    <div id="console" class="console"></div>
+  </div>
+
+  <script>
+    const socket = io("http://{{ ip_local }}:5000");
+    const keysPressed = new Set();
+
+    function setActuatorsData(servo, angle) {
+      socket.emit('actuators', { key: servo, value: angle });
+    }
+
+    function actualizarMovimiento() {
+      const acciones = Array.from(keysPressed);
+      let speedA = parseInt(document.getElementById('speedA').value) || 80;
+      let speedB = parseInt(document.getElementById('speedB').value) || 80;
+
+      if (document.getElementById('boost1').checked) {
+        speedA += parseInt(document.getElementById('boost1Value').value) || 0;
+        speedB += parseInt(document.getElementById('boost1Value').value) || 0;
+      }
+
+      if (document.getElementById('boost2').checked) {
+        speedA += parseInt(document.getElementById('boost2Value').value) || 0;
+        speedB += parseInt(document.getElementById('boost2Value').value) || 0;
+      }
+
+      speedA = Math.min(255, speedA);
+      speedB = Math.min(255, speedB);
+
+      socket.emit('movimiento', {
+        keys: acciones,
+        speedA: speedA,
+        speedB: speedB,
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toUpperCase();
+
+      if (['W', 'E'].includes(key)) {
+        if (!keysPressed.has(key)) {
+          keysPressed.add(key);
+          actualizarMovimiento();
+        }
+      }
+
+      if (key === '1') {
+        const checkbox = document.getElementById('boost1');
+        checkbox.checked = !checkbox.checked;
+      }
+
+      if (key === '2') {
+        const checkbox = document.getElementById('boost2');
+        checkbox.checked = !checkbox.checked;
+      }
+
+      if (key === 'S') {
+        const cb = document.getElementById('reversa_motor_1');
+        cb.checked = !cb.checked;
+        setActuatorsData('s', cb.checked ? 'on' : 'off');
+        document.getElementById('reversa_ambos').checked =
+          cb.checked && document.getElementById('reversa_motor_2').checked;
+      }
+
+      if (key === 'D') {
+        const cb = document.getElementById('reversa_motor_2');
+        cb.checked = !cb.checked;
+        setActuatorsData('d', cb.checked ? 'on' : 'off');
+        document.getElementById('reversa_ambos').checked =
+          cb.checked && document.getElementById('reversa_motor_1').checked;
+      }
+
+      if (key === 'A') {
+        const cb = document.getElementById('reversa_ambos');
+        cb.checked = !cb.checked;
+        setActuatorsData('a', cb.checked ? 'on' : 'off');
+        document.getElementById('reversa_motor_1').checked = cb.checked;
+        document.getElementById('reversa_motor_2').checked = cb.checked;
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      const key = e.key.toUpperCase();
+      if (keysPressed.has(key)) {
+        if (key === 'W' || key === 'E') {
+          keysPressed.delete(key);
+          actualizarMovimiento();
+        }
+      }
+    });
+
+    socket.on('arduino_output', (data) => {
+      const consola = document.getElementById('console');
+      consola.textContent += data.linea + '\n';
+      consola.scrollTop = consola.scrollHeight;
+    });
+  </script>
+</body>
+</html>
