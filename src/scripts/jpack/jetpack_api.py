@@ -12,9 +12,9 @@ default_factorA = 1.00
 default_factorB = 1.00
 
 # CHANGE DEVICE PORT AND IP LOCAL VPN WIREGUARD
-port_serial = "/dev/ttyACM0"
-port_serial_actuators = "/dev/ttyUSB1"
-ip_local = "127.0.0.1"
+port_serial = "COM3"
+port_serial_actuators = "COM4"
+ip_local = "10.13.13.9"
 
 # FALSE IS Development MODE. TRUE IS Production MODE.
 is_production = True
@@ -93,32 +93,26 @@ def on_movimiento(data):
 
 @socketio.on('actuators')
 def on_actuators(data):
-    if data.get('key') == 'f':
+    key  = str(data.get('key')).lower()
+    value = str(data.get('value')).lower() if data.get('value') else None
+    if key == 'f':
         comando = f"f\n".encode('utf-8')
-    elif data.get('key') == 'r':
+    elif key == 'r':
         comando = f"r\n".encode('utf-8')
-    elif data.get('key') == 's':
+    elif key == 's':
         comando = f"s\n".encode('utf-8')
-    elif data.get('key') == 'dr' and data.get('value') == 'on':
-        comando = f"dr on\n".encode('utf-8')
-    elif data.get('key') == 'dr' and data.get('value') == 'off':
-        comando = f"dr off\n".encode('utf-8')
-    elif data.get('key') == 'iz' and data.get('value') == 'on':
-        comando = f"iz on\n".encode('utf-8')
-    elif data.get('key') == 'iz' and data.get('value') == 'off':
-        comando = f"iz off\n".encode('utf-8')
-    elif data.get('key') == 'rev1' and data.get('value') == 'on':
-        comando = f"rev1 on\n".encode('utf-8')
-    elif data.get('key') == 'rev1' and data.get('value') == 'off':
-        comando = f"rev1 off\n".encode('utf-8')
-    elif data.get('key') == 'rev2' and data.get('value') == 'on':
-        comando = f"rev2 on\n".encode('utf-8')
-    elif data.get('key') == 'rev2' and data.get('value') == 'off':
-        comando = f"rev2 off\n".encode('utf-8')
-    elif data.get('key') == 'charge' and data.get('value') == 'on':
-        comando = f"charge on\n".encode('utf-8')
-    elif data.get('key') == 'charge' and data.get('value') == 'off':
-        comando = f"charge off\n".encode('utf-8')
+    elif key == 'dr':
+        comando = f"dr {value}\n".encode('utf-8')
+    elif key == 'iz':
+        comando = f"iz {value}\n".encode('utf-8')
+    elif key == 'rev1':
+        comando = f"rev1 {value}\n".encode('utf-8')
+    elif key == 'rev2':
+        comando = f"rev2 {value}\n".encode('utf-8')
+    elif key == 'revAll':
+        comando = f"revAll {value}\n".encode('utf-8')
+    elif key == 'charge':
+        comando = f"charge {value}\n".encode('utf-8')
     else:
         comando = f"{data.get('key')} {data.get('value')}\n".encode('utf-8')
         

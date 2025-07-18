@@ -102,6 +102,14 @@ void loop() {
     } else if (input == "rev2 off") {
       digitalWrite(RELAY_REV2, LOW);
       Serial.println("Reversa motor 2 desactivada");
+    } else if (input == "revAll on") {
+      digitalWrite(RELAY_REV1, HIGH);
+      digitalWrite(RELAY_REV2, HIGH);
+      Serial.println("Reversa motor 1 y 2 activada");
+    } else if (input == "revAll off") {
+      digitalWrite(RELAY_REV1, LOW);
+      digitalWrite(RELAY_REV2, LOW);
+      Serial.println("Reversa motor 1 y 2 desactivada");
     } else if (input == "charge on") {
       digitalWrite(RELAY_CHARGE, HIGH);
       Serial.println("Carga autónoma activada");
