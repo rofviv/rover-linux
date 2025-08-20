@@ -12,8 +12,8 @@ default_factorA = 1.00
 default_factorB = 1.00
 
 # CHANGE DEVICE PORT AND IP LOCAL VPN WIREGUARD
-port_serial = "COM3"
-port_serial_actuators = "COM4"
+port_serial = "COM7"
+port_serial_actuators = "COM6"
 ip_local = "10.13.13.9"
 
 # FALSE IS Development MODE. TRUE IS Production MODE.
@@ -41,6 +41,11 @@ def enviar_comando(velocidad_izq, velocidad_der):
         arduino.write(comando.encode())
 
 
+def enviar_comando_str(comando):
+    if is_production:
+        arduino.write(f"{comando}\n".encode())
+
+
 def monitor_serial():
     while True:
         if is_production:
@@ -61,7 +66,8 @@ def watchdog_loop():
         time.sleep(0.1)
         with command_lock:
             if current_motion is not None and (time.time() - last_command_time > COMMAND_TIMEOUT):
-                enviar_comando(0, 0)
+                #enviar_comando(0, 0)
+                enviar_comando_str(f"0")
                 current_motion = None
                 print("[INFO] Motores detenidos por inactividad")
 
@@ -80,15 +86,25 @@ def on_movimiento(data):
     factorA = default_factorA
     factorB = default_factorB
 
-    velocidad_izq = speedA if 'W' in keys else 0
-    velocidad_der = speedB if 'E' in keys else 0
+    #velocidad_izq = speedA if 'W' in keys else 0
+    #velocidad_der = speedB if 'E' in keys else 0
+    velocidad_izq = speedA
+    velocidad_der = speedB
 
     nuevo_motion = (velocidad_izq, velocidad_der, factorA, factorB)
 
     with command_lock:
         last_command_time = time.time()
         if current_motion != nuevo_motion:
-            enviar_comando(velocidad_izq, velocidad_der)
+            #enviar_comando(velocidad_izq, velocidad_der)
+            if '8' in keys:
+                enviar_comando_str(f"D{velocidad_izq}")
+            elif '4' in keys:
+                enviar_comando_str(f"A{velocidad_izq}")
+            elif '6' in keys:
+                enviar_comando_str(f"B{velocidad_der}")
+            elif '5' in keys:
+                enviar_comando_str(f"0")
             current_motion = nuevo_motion
 
 @socketio.on('actuators')

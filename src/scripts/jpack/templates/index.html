@@ -194,8 +194,24 @@
       speedA = Math.min(255, speedA);
       speedB = Math.min(255, speedB);
       
-      const velA = acciones.includes('W') ? speedA : 0;
-      const velB = acciones.includes('E') ? speedB : 0;
+      // const velA = acciones.includes('W') ? speedA : 0;
+      // const velB = acciones.includes('E') ? speedB : 0;
+
+      // NUEVA VERSION 8 = AMBOS, 4 = IZQUIERDA, 6 = DERECHA, 5 = PARAR
+
+      if (acciones.includes('8')) {
+        //
+      }
+      if (acciones.includes('4')) {
+        speedB = 0;
+      }
+      if (acciones.includes('6')) {
+        speedA = 0;
+      }
+      if (acciones.includes('5')) {
+        speedA = 0;
+        speedB = 0;
+      }
 
       socket.emit('movimiento', {
         keys: acciones,
@@ -232,7 +248,7 @@
         }
       }
 
-      if (['W', 'E'].includes(key)) {
+      if (['W', 'E', '8', '4', '6', '5'].includes(key)) {
         if (!keysPressed.has(key)) {
           keysPressed.add(key);
           iniciarMovimiento();
