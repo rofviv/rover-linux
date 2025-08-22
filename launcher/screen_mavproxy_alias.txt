@@ -1,0 +1,3 @@
+SET TO .bashrc
+
+alias mavproxy_launcher="bash $PROJECT_ROOT/launcher/screen_mavproxy.bash"
