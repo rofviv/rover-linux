@@ -1,13 +1,3 @@
-Gtk-Message: 10:06:04.262: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
-[5340, Main Thread] WARNING: GTK+ module /snap/firefox/5437/gnome-platform/usr/lib/gtk-2.0/modules/libcanberra-gtk-module.so cannot be loaded.
-GTK+ 2.x symbols detected. Using GTK+ 2.x and GTK+ 3 in the same process is not supported.: 'glib warning', file /build/firefox/parts/firefox/build/toolkit/xre/nsSigHandlers.cpp:201
+El navegador está abierto con los ajustes de ocultación. Presiona Ctrl+C para cerrar manualmente.
+Ha ocurrido un error: Message: Failed to decode response from marionette
 
-(firefox:5340): Gtk-WARNING **: 10:06:04.312: GTK+ module /snap/firefox/5437/gnome-platform/usr/lib/gtk-2.0/modules/libcanberra-gtk-module.so cannot be loaded.
-GTK+ 2.x symbols detected. Using GTK+ 2.x and GTK+ 3 in the same process is not supported.
-Gtk-Message: 10:06:04.312: Failed to load module "canberra-gtk-module"
-[5340, Main Thread] WARNING: GTK+ module /snap/firefox/5437/gnome-platform/usr/lib/gtk-2.0/modules/libcanberra-gtk-module.so cannot be loaded.
-GTK+ 2.x symbols detected. Using GTK+ 2.x and GTK+ 3 in the same process is not supported.: 'glib warning', file /build/firefox/parts/firefox/build/toolkit/xre/nsSigHandlers.cpp:201
-
-(firefox:5340): Gtk-WARNING **: 10:06:04.313: GTK+ module /snap/firefox/5437/gnome-platform/usr/lib/gtk-2.0/modules/libcanberra-gtk-module.so cannot be loaded.
-GTK+ 2.x symbols detected. Using GTK+ 2.x and GTK+ 3 in the same process is not supported.
-Gtk-Message: 10:06:04.313: Failed to load module "canberra-gtk-module"
