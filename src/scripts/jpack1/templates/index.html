@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control de Robot</title>
+  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 1rem;
+      color: #333;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .row label {
+      flex: 1 1 auto;
+    }
+
+    input[type="number"], input[type="checkbox"], button {
+      padding: 0.4rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .section {
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+
+    pre {
+      background: #111;
+      color: #0f0;
+      padding: 0.5rem;
+      border-radius: 6px;
+      height: 150px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Presiona W para rueda izquierda, E para la derecha</h2>
+
+    <div class="section">
+      <div class="row">
+        <label>Velocidad Izq: <input type="number" min="0" max="255" id="speedA" value="80"></label>
+        <label>Velocidad Der: <input type="number" min="0" max="255" id="speedB" value="80"></label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <label><input type="checkbox" id="boost1"> Boost 1 (Tecla 1)</label>
+        <input type="number" id="boost1Value" value="5" min="0" max="255">
+        <label><input type="checkbox" id="boost2"> Boost 2 (Tecla 2)</label>
+        <input type="number" id="boost2Value" value="10" min="0" max="255">
+      </div>
+    </div>
+
+    <div class="section row">
+      <button id="motor_adelante" onclick="setActuatorsData('f', this.checked ? 'on' : 'off')">Puerta abierta</button>
+      <button id="motor_reversa" onclick="setActuatorsData('r', this.checked ? 'on' : 'off')">Puerta cerrada</button>
+      <button id="motor_detenido" onclick="setActuatorsData('s', this.checked ? 'on' : 'off')">Puerta detenida</button>
+    </div>
+
+    <div class="section row">
+      <label><input type="checkbox" id="guiñador_izquierdo" onclick="setActuatorsData('iz', this.checked ? 'on' : 'off')"> Guiñador izquierdo (I)</label>
+      <label><input type="checkbox" id="guiñador_derecho" onclick="setActuatorsData('dr', this.checked ? 'on' : 'off')"> Guiñador derecho (O)</label>
+      <label><input type="checkbox" id="reversa_motor_1" onclick="setActuatorsData('rev2', this.checked ? 'on' : 'off')"> Reversa motor 1 (S)</label>
+      <label><input type="checkbox" id="reversa_motor_2" onclick="setActuatorsData('rev1', this.checked ? 'on' : 'off')"> Reversa motor 2 (D)</label>
+      <label><input type="checkbox" id="reversa_ambos" onclick="setActuatorsData('revAll', this.checked ? 'on' : 'off')"> Ambos (A)</label>
+      <label><input type="checkbox" id="carga_autonoma" onclick="setActuatorsData('charge', this.checked ? 'on' : 'off')"> Carga autónoma</label>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <label>Puerta lateral (Min, Max):
+          <input type="number" min="35" max="130" id="puerta_lateral_min" value="35">
+          <input type="number" min="35" max="130" id="puerta_lateral_max" value="130">
+        </label>
+        <button onclick="setActuatorsData(0, document.getElementById('puerta_lateral_max').value)">Abrir</button>
+        <button onclick="setActuatorsData(0, document.getElementById('puerta_lateral_min').value)">Cerrar</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <label>Freno Izquierdo (Min, Max):
+          <input type="number" min="90" max="128" id="freno_izquierdo_min" value="90">
+          <input type="number" min="90" max="128" id="freno_izquierdo_max" value="128">
+        </label>
+        <button onclick="setActuatorsData(2, document.getElementById('freno_izquierdo_min').value)">Desactivar</button>
+        <button onclick="setActuatorsData(2, document.getElementById('freno_izquierdo_max').value)">Activar</button>
+      </div>
+
+      <div class="row">
+        <label>Freno Derecho (Min, Max):
+          <input type="number" min="45" max="90" id="freno_derecho_min" value="45">
+          <input type="number" min="45" max="90" id="freno_derecho_max" value="90">
+        </label>
+        <button onclick="setActuatorsData(3, document.getElementById('freno_derecho_min').value)">Activar</button>
+        <button onclick="setActuatorsData(3, document.getElementById('freno_derecho_max').value)">Desactivar</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Consola de movimiento</h3>
+      <pre id="console"></pre>
+    </div>
+
+    <div class="section">
+      <h3>Consola de actuadores</h3>
+      <pre id="console_actuators"></pre>
+    </div>
+  </div>
+  <script>
+    const socket = io("http://{{ ip_local }}:5000");
+
+    const keysPressed = new Set();
+    let movimientoInterval = null;
+
+    function setActuatorsData(servo, angle) {
+      socket.emit('actuators', {
+        key: servo,
+        value: angle,
+      });
+    }
+
+    function actualizarMovimiento() {
+      const acciones = Array.from(keysPressed);
+      let speedA = parseInt(document.getElementById('speedA').value) || 80;
+      let speedB = parseInt(document.getElementById('speedB').value) || 80;
+      
+      if (document.getElementById('boost1').checked) {
+        const boost1 = parseInt(document.getElementById('boost1Value').value) || 5;
+        speedA += boost1;
+        speedB += boost1;
+      }
+      
+      if (document.getElementById('boost2').checked) {
+        const boost2 = parseInt(document.getElementById('boost2Value').value) || 10;
+        speedA += boost2;
+        speedB += boost2;
+      }
+      
+      speedA = Math.min(255, speedA);
+      speedB = Math.min(255, speedB);
+      
+      // const velA = acciones.includes('W') ? speedA : 0;
+      // const velB = acciones.includes('E') ? speedB : 0;
+
+      // NUEVA VERSION 8 = AMBOS, 4 = IZQUIERDA, 6 = DERECHA, 5 = PARAR
+
+      if (acciones.includes('8')) {
+        //
+      }
+      if (acciones.includes('4')) {
+        speedB = 0;
+      }
+      if (acciones.includes('6')) {
+        speedA = 0;
+      }
+      if (acciones.includes('5')) {
+        speedA = 0;
+        speedB = 0;
+      }
+
+      socket.emit('movimiento', {
+        keys: acciones,
+        speedA: speedA,
+        speedB: speedB,
+      });
+    }
+
+    function iniciarMovimiento() {
+      if (movimientoInterval === null) {
+        actualizarMovimiento();
+        movimientoInterval = setInterval(actualizarMovimiento, 200);
+      }
+    }
+
+    function detenerMovimientoSiEsNecesario() {
+      if (keysPressed.size === 0 && movimientoInterval !== null) {
+        clearInterval(movimientoInterval);
+        movimientoInterval = null;
+        actualizarMovimiento();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toUpperCase();
+
+      if (key === ' ') {
+        if (!keysPressed.has('SPACE')) {
+          keysPressed.add('SPACE');
+          const frenoIzqMax = document.getElementById('freno_izquierdo_max').value;
+          const frenoDerMin = document.getElementById('freno_derecho_min').value;
+          setActuatorsData(2, frenoIzqMax);
+          setActuatorsData(3, frenoDerMin);
+        }
+      }
+
+      if (['W', 'E', '8', '4', '6', '5'].includes(key)) {
+        if (!keysPressed.has(key)) {
+          keysPressed.add(key);
+          iniciarMovimiento();
+        }
+      }
+
+      if (key === '1') {
+        const checkbox = document.getElementById('boost1');
+        checkbox.checked = !checkbox.checked;
+      }
+      if (key === '2') {
+        const checkbox = document.getElementById('boost2');
+        checkbox.checked = !checkbox.checked;
+      }
+
+      if (key === 'S') {
+        const cb = document.getElementById('reversa_motor_1');
+        cb.checked = !cb.checked;
+        setActuatorsData('rev2', cb.checked ? 'on' : 'off');
+        document.getElementById('reversa_ambos').checked =
+          cb.checked && document.getElementById('reversa_motor_2').checked;
+      }
+
+      if (key === 'D') {
+        const cb = document.getElementById('reversa_motor_2');
+        cb.checked = !cb.checked;
+        setActuatorsData('rev1', cb.checked ? 'on' : 'off');
+        document.getElementById('reversa_ambos').checked =
+          cb.checked && document.getElementById('reversa_motor_1').checked;
+      }
+
+      if (key === 'A') {
+        const cb = document.getElementById('reversa_ambos');
+        cb.checked = !cb.checked;
+        setActuatorsData('revAll', cb.checked ? 'on' : 'off');
+        document.getElementById('reversa_motor_1').checked = cb.checked;
+        document.getElementById('reversa_motor_2').checked = cb.checked;
+      }
+
+      if (key === 'I') {
+        const cb = document.getElementById('guiñador_izquierdo');
+        cb.checked = !cb.checked;
+        setActuatorsData('iz', cb.checked ? 'on' : 'off');
+      }
+
+      if (key === 'O') {
+        const cb = document.getElementById('guiñador_derecho');
+        cb.checked = !cb.checked;
+        setActuatorsData('dr', cb.checked ? 'on' : 'off');
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      const key = e.key.toUpperCase();
+
+      if (key === ' ') {
+        keysPressed.delete('SPACE');
+        const frenoIzqMin = document.getElementById('freno_izquierdo_min').value;
+        const frenoDerMax = document.getElementById('freno_derecho_max').value;
+        setActuatorsData(2, frenoIzqMin);
+        setActuatorsData(3, frenoDerMax);
+      }
+
+      if (keysPressed.has(key)) {
+        keysPressed.delete(key);
+        detenerMovimientoSiEsNecesario();
+      }
+    });
+
+    socket.on('arduino_output', (data) => {
+      const consola = document.getElementById('console');
+      consola.textContent += data.linea + '\n';
+      consola.scrollTop = consola.scrollHeight;
+    });
+
+    socket.on('arduino_output_actuators', (data) => {
+      const consola = document.getElementById('console_actuators');
+      consola.textContent += data.linea + '\n';
+      consola.scrollTop = consola.scrollHeight;
+    });
+  </script>
+</body>
+</html>
