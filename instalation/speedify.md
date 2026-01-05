@@ -32,6 +32,7 @@ DEPRECATED
 ```bash
 sudo vim /etc/wireguard/wg0.conf
 AllowedIPs = 10.13.13.0/24
+AllowedIPs = 0.0.0.0/0
 
 sudo wg-quick down wg0
 sudo wg-quick up wg0
